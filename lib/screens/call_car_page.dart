@@ -70,10 +70,41 @@ class _CallCarPageState extends State<CallCarPage> {
     }
   }
 
+  void _fitBoundsToShowBothPositions() {
+    if (_carPosition == null || _mapController == null) return;
+
+    // Calculate bounds that include both positions
+    double southLat = _currentPosition.latitude < _carPosition!.latitude
+        ? _currentPosition.latitude
+        : _carPosition!.latitude;
+    double northLat = _currentPosition.latitude > _carPosition!.latitude
+        ? _currentPosition.latitude
+        : _carPosition!.latitude;
+    double westLng = _currentPosition.longitude < _carPosition!.longitude
+        ? _currentPosition.longitude
+        : _carPosition!.longitude;
+    double eastLng = _currentPosition.longitude > _carPosition!.longitude
+        ? _currentPosition.longitude
+        : _carPosition!.longitude;
+
+    // Add some padding to the bounds (10% on each side)
+    double latPadding = (northLat - southLat) * 0.3;
+    double lngPadding = (eastLng - westLng) * 0.3;
+
+    LatLngBounds bounds = LatLngBounds(
+      southwest: LatLng(southLat - latPadding, westLng - lngPadding),
+      northeast: LatLng(northLat + latPadding, eastLng + lngPadding),
+    );
+
+    _mapController!.animateCamera(
+      CameraUpdate.newLatLngBounds(bounds, 100), // 100 pixels padding
+    );
+  }
+
   Future<void> _createCarIcon() async {
     final pictureRecorder = ui.PictureRecorder();
     final canvas = Canvas(pictureRecorder);
-    final size = 120.0;
+    final size = 80.0; // Reduced from 120.0
 
     // Draw circle background
     final paint = Paint()
@@ -103,7 +134,7 @@ class _CallCarPageState extends State<CallCarPage> {
       text: TextSpan(
         text: String.fromCharCode(Icons.directions_car.codePoint),
         style: TextStyle(
-          fontSize: 60,
+          fontSize: 40, // Reduced from 60
           fontFamily: Icons.directions_car.fontFamily,
           color: Colors.white,
         ),
@@ -152,14 +183,14 @@ class _CallCarPageState extends State<CallCarPage> {
             compassEnabled: true,
             padding: const EdgeInsets.only(
               right: 16,
-              bottom: 200, // Padding to avoid bottom sheet
+              bottom: 130, // Further reduced to match more compact bottom sheet
             ),
           ),
           
           // Custom location button
           Positioned(
             right: 16,
-            bottom: 220,
+            bottom: 150, // Further reduced to match more compact bottom sheet
             child: FloatingActionButton(
               onPressed: _getCurrentLocation,
               backgroundColor: Colors.white,
@@ -302,6 +333,7 @@ class _CallCarPageState extends State<CallCarPage> {
       ),
       padding: const EdgeInsets.all(24),
       child: SafeArea(
+        top: false, // Don't add padding at top
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
@@ -423,10 +455,8 @@ class _CallCarPageState extends State<CallCarPage> {
           _estimatedTime = 5;
         });
 
-        // Move camera to show car position
-        _mapController?.animateCamera(
-          CameraUpdate.newLatLngZoom(_carPosition!, 14),
-        );
+        // Move camera to show both passenger and car positions
+        _fitBoundsToShowBothPositions();
 
         // Auto transition to onBoard after 5 seconds
         Future.delayed(const Duration(seconds: 5), () {
