@@ -5,6 +5,19 @@ plugins {
     id("dev.flutter.flutter-gradle-plugin")
 }
 
+// Load Google Maps API Key from properties file
+val googleMapsApiKey: String by lazy {
+    val propsFile = rootProject.file("google_maps_api.properties")
+    if (propsFile.exists()) {
+        val props = java.util.Properties()
+        props.load(propsFile.inputStream())
+        props.getProperty("GOOGLE_MAPS_API_KEY", "")
+    } else {
+        logger.warn("google_maps_api.properties not found. Google Maps may not work correctly.")
+        ""
+    }
+}
+
 android {
     namespace = "com.chijia.flutter_one_btn_call_car"
     compileSdk = flutter.compileSdkVersion
@@ -28,6 +41,9 @@ android {
         targetSdk = flutter.targetSdkVersion
         versionCode = flutter.versionCode
         versionName = flutter.versionName
+        
+        // Inject Google Maps API Key as manifest placeholder
+        manifestPlaceholders["GOOGLE_MAPS_API_KEY"] = googleMapsApiKey
     }
 
     buildTypes {
