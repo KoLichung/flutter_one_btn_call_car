@@ -26,16 +26,27 @@ class _RideDetailPageState extends State<RideDetailPage> {
   }
 
   void _initializeMockRoute() {
-    // Mock coordinates for Taipei area
-    _pickupLocation = const LatLng(25.0330, 121.5654);
-    _dropoffLocation = const LatLng(25.0420, 121.5750);
+    // 使用实际的订单位置
+    _pickupLocation = LatLng(widget.ride.onLat, widget.ride.onLng);
+    
+    // 如果有下车位置，使用实际位置；否则使用模拟位置
+    if (widget.ride.offLat != null && widget.ride.offLng != null) {
+      _dropoffLocation = LatLng(widget.ride.offLat!, widget.ride.offLng!);
+    } else {
+      // 如果没有下车位置，使用上车位置附近的模拟位置
+      _dropoffLocation = LatLng(
+        widget.ride.onLat + 0.01,
+        widget.ride.onLng + 0.01,
+      );
+    }
     
     // Mock route points between pickup and dropoff
     _routePoints = [
       _pickupLocation,
-      LatLng(25.0350, 121.5680),
-      LatLng(25.0380, 121.5710),
-      LatLng(25.0400, 121.5730),
+      LatLng(
+        (_pickupLocation.latitude + _dropoffLocation.latitude) / 2,
+        (_pickupLocation.longitude + _dropoffLocation.longitude) / 2,
+      ),
       _dropoffLocation,
     ];
   }
@@ -97,7 +108,7 @@ class _RideDetailPageState extends State<RideDetailPage> {
                       children: [
                         // Time
                         Text(
-                          _formatDateTime(widget.ride.dateTime),
+                          _formatDateTime(widget.ride.createDateTime),
                           style: TextStyle(
                             fontSize: 14,
                             color: Colors.grey.shade600,
@@ -106,11 +117,13 @@ class _RideDetailPageState extends State<RideDetailPage> {
                         const SizedBox(height: 8),
                         // Pickup Address
                         Text(
-                          widget.ride.pickupAddress,
+                          widget.ride.onAddress,
                           style: const TextStyle(
                             fontSize: 16,
                             fontWeight: FontWeight.bold,
                           ),
+                          maxLines: 2,
+                          overflow: TextOverflow.ellipsis,
                         ),
                       ],
                     ),
@@ -128,22 +141,24 @@ class _RideDetailPageState extends State<RideDetailPage> {
                           vertical: 4,
                         ),
                         decoration: BoxDecoration(
-                          color: Colors.green.withValues(alpha: 0.1),
+                          color: _getStatusColor().withValues(alpha: 0.1),
                           borderRadius: BorderRadius.circular(12),
                         ),
-                        child: const Text(
-                          '已完成',
+                        child: Text(
+                          widget.ride.statusText,
                           style: TextStyle(
                             fontSize: 12,
                             fontWeight: FontWeight.bold,
-                            color: Colors.green,
+                            color: _getStatusColor(),
                           ),
                         ),
                       ),
                       const SizedBox(height: 8),
                       // Fare
                       Text(
-                        'NT\$ ${widget.ride.fare.toStringAsFixed(0)}',
+                        widget.ride.caseMoney != null
+                            ? 'NT\$ ${widget.ride.caseMoney!.toStringAsFixed(0)}'
+                            : '-',
                         style: const TextStyle(
                           fontSize: 18,
                           fontWeight: FontWeight.bold,
@@ -169,18 +184,19 @@ class _RideDetailPageState extends State<RideDetailPage> {
         icon: BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueGreen),
         infoWindow: InfoWindow(
           title: '上車地點',
-          snippet: widget.ride.pickupAddress,
+          snippet: widget.ride.onAddress,
         ),
       ),
-      Marker(
-        markerId: const MarkerId('dropoff'),
-        position: _dropoffLocation,
-        icon: BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueRed),
-        infoWindow: InfoWindow(
-          title: '下車地點',
-          snippet: widget.ride.dropoffAddress,
+      if (widget.ride.offAddress != null)
+        Marker(
+          markerId: const MarkerId('dropoff'),
+          position: _dropoffLocation,
+          icon: BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueRed),
+          infoWindow: InfoWindow(
+            title: '下車地點',
+            snippet: widget.ride.offAddress,
+          ),
         ),
-      ),
     };
   }
 
@@ -225,6 +241,20 @@ class _RideDetailPageState extends State<RideDetailPage> {
     return '${dateTime.year}/${dateTime.month}/${dateTime.day} '
         '${dateTime.hour.toString().padLeft(2, '0')}:'
         '${dateTime.minute.toString().padLeft(2, '0')}';
+  }
+
+  Color _getStatusColor() {
+    switch (widget.ride.caseState) {
+      case 'finished':
+        return Colors.green;
+      case 'canceled':
+        return Colors.red;
+      case 'wait':
+      case 'dispatching':
+        return Colors.orange;
+      default:
+        return Colors.blue;
+    }
   }
 }
 

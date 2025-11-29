@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
-import '../models/user.dart';
+import '../models/customer.dart';
+import '../services/auth_service.dart';
 import 'ride_history_page.dart';
 import 'login_page.dart';
 
@@ -11,16 +12,71 @@ class ProfilePage extends StatefulWidget {
 }
 
 class _ProfilePageState extends State<ProfilePage> {
-  // Mock user data
-  final User _currentUser = User(
-    id: '1',
-    nickname: '測試用戶',
-    phone: '0912345678',
-    loginMethod: 'phone',
-  );
+  final AuthService _authService = AuthService();
+  Customer? _currentCustomer;
+  bool _isLoading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadCustomerData();
+  }
+
+  Future<void> _loadCustomerData() async {
+    setState(() {
+      _isLoading = true;
+    });
+
+    final customer = await _authService.getCurrentCustomer();
+
+    setState(() {
+      _currentCustomer = customer;
+      _isLoading = false;
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
+    if (_isLoading) {
+      return Scaffold(
+        appBar: AppBar(
+          title: const Text('個人資料'),
+          centerTitle: true,
+          elevation: 0,
+          backgroundColor: Colors.blue,
+          foregroundColor: Colors.white,
+        ),
+        body: const Center(
+          child: CircularProgressIndicator(),
+        ),
+      );
+    }
+
+    if (_currentCustomer == null) {
+      return Scaffold(
+        appBar: AppBar(
+          title: const Text('個人資料'),
+          centerTitle: true,
+          elevation: 0,
+          backgroundColor: Colors.blue,
+          foregroundColor: Colors.white,
+        ),
+        body: Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              const Text('無法加載用戶資料'),
+              const SizedBox(height: 16),
+              ElevatedButton(
+                onPressed: _loadCustomerData,
+                child: const Text('重試'),
+              ),
+            ],
+          ),
+        ),
+      );
+    }
+
     return Scaffold(
       appBar: AppBar(
         title: const Text('個人資料'),
@@ -70,7 +126,7 @@ class _ProfilePageState extends State<ProfilePage> {
                   
                   // Nickname
                   Text(
-                    _currentUser.nickname,
+                    _currentCustomer!.displayName,
                     style: const TextStyle(
                       fontSize: 24,
                       fontWeight: FontWeight.bold,
@@ -91,14 +147,14 @@ class _ProfilePageState extends State<ProfilePage> {
                 children: [
                   // Login Method Card
                   _buildInfoCard(
-                    icon: _currentUser.loginMethod == 'phone' 
+                    icon: _currentCustomer!.loginMethod == 'phone' 
                         ? Icons.phone_android 
                         : Icons.chat_bubble,
                     title: '登入方式',
-                    subtitle: _currentUser.loginMethod == 'phone'
-                        ? '手機登入(${_currentUser.phone})'
+                    subtitle: _currentCustomer!.loginMethod == 'phone'
+                        ? '手機登入(${_currentCustomer!.phone ?? ''})'
                         : 'LINE 登入',
-                    color: _currentUser.loginMethod == 'phone'
+                    color: _currentCustomer!.loginMethod == 'phone'
                         ? Colors.blue
                         : const Color(0xFF00B900),
                   ),
@@ -254,7 +310,7 @@ class _ProfilePageState extends State<ProfilePage> {
   }
 
   void _showEditProfileDialog() {
-    final nicknameController = TextEditingController(text: _currentUser.nickname);
+    final nicknameController = TextEditingController(text: _currentCustomer?.displayName);
     
     showDialog(
       context: context,
@@ -274,7 +330,7 @@ class _ProfilePageState extends State<ProfilePage> {
           ),
           ElevatedButton(
             onPressed: () {
-              // Mock update
+              // TODO: 实现更新用户资料 API
               Navigator.of(context).pop();
               ScaffoldMessenger.of(context).showSnackBar(
                 const SnackBar(content: Text('資料已更新')),
@@ -287,24 +343,19 @@ class _ProfilePageState extends State<ProfilePage> {
     );
   }
 
-  void _handleLogout() {
-    showDialog(
+  Future<void> _handleLogout() async {
+    final confirmed = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
         title: const Text('確認登出'),
         content: const Text('確定要登出嗎？'),
         actions: [
           TextButton(
-            onPressed: () => Navigator.of(context).pop(),
+            onPressed: () => Navigator.of(context).pop(false),
             child: const Text('取消'),
           ),
           ElevatedButton(
-            onPressed: () {
-              Navigator.of(context).pop();
-              Navigator.of(context).pushReplacement(
-                MaterialPageRoute(builder: (context) => const LoginPage()),
-              );
-            },
+            onPressed: () => Navigator.of(context).pop(true),
             style: ElevatedButton.styleFrom(
               backgroundColor: Colors.red,
               foregroundColor: Colors.white,
@@ -314,6 +365,16 @@ class _ProfilePageState extends State<ProfilePage> {
         ],
       ),
     );
+
+    if (confirmed == true && mounted) {
+      await _authService.logout();
+      if (mounted) {
+        Navigator.of(context).pushAndRemoveUntil(
+          MaterialPageRoute(builder: (context) => const LoginPage()),
+          (route) => false,
+        );
+      }
+    }
   }
 }
 

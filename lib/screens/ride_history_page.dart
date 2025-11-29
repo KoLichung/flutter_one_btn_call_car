@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../models/ride_record.dart';
+import '../services/ride_service.dart';
 import 'ride_detail_page.dart';
 
 class RideHistoryPage extends StatefulWidget {
@@ -10,64 +11,34 @@ class RideHistoryPage extends StatefulWidget {
 }
 
 class _RideHistoryPageState extends State<RideHistoryPage> {
-  // Mock ride history data
-  final List<RideRecord> _rideHistory = [
-    RideRecord(
-      id: '1',
-      dateTime: DateTime.now().subtract(const Duration(days: 1)),
-      pickupAddress: '台北車站',
-      dropoffAddress: '台北101',
-      fare: 250.0,
-      duration: 25,
-      driverName: '王師傅',
-      carNumber: 'ABC-1234',
-      status: 'completed',
-    ),
-    RideRecord(
-      id: '2',
-      dateTime: DateTime.now().subtract(const Duration(days: 3)),
-      pickupAddress: '信義區',
-      dropoffAddress: '松山機場',
-      fare: 380.0,
-      duration: 35,
-      driverName: '李師傅',
-      carNumber: 'DEF-5678',
-      status: 'completed',
-    ),
-    RideRecord(
-      id: '3',
-      dateTime: DateTime.now().subtract(const Duration(days: 7)),
-      pickupAddress: '西門町',
-      dropoffAddress: '台北車站',
-      fare: 150.0,
-      duration: 15,
-      driverName: '張師傅',
-      carNumber: 'GHI-9012',
-      status: 'completed',
-    ),
-    RideRecord(
-      id: '4',
-      dateTime: DateTime.now().subtract(const Duration(days: 10)),
-      pickupAddress: '台北101',
-      dropoffAddress: '大安森林公園',
-      fare: 180.0,
-      duration: 18,
-      driverName: '陳師傅',
-      carNumber: 'JKL-3456',
-      status: 'completed',
-    ),
-    RideRecord(
-      id: '5',
-      dateTime: DateTime.now().subtract(const Duration(days: 15)),
-      pickupAddress: '士林夜市',
-      dropoffAddress: '淡水老街',
-      fare: 420.0,
-      duration: 45,
-      driverName: '林師傅',
-      carNumber: 'MNO-7890',
-      status: 'completed',
-    ),
-  ];
+  final RideService _rideService = RideService();
+  List<RideRecord> _rideHistory = [];
+  bool _isLoading = true;
+  String? _errorMessage;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadHistory();
+  }
+
+  Future<void> _loadHistory() async {
+    setState(() {
+      _isLoading = true;
+      _errorMessage = null;
+    });
+
+    final result = await _rideService.getHistory();
+
+    setState(() {
+      _isLoading = false;
+      if (result['success'] == true) {
+        _rideHistory = result['cases'] as List<RideRecord>;
+      } else {
+        _errorMessage = result['message'];
+      }
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -83,34 +54,65 @@ class _RideHistoryPageState extends State<RideHistoryPage> {
         children: [
           // History List
           Expanded(
-            child: _rideHistory.isEmpty
-                ? Center(
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Icon(
-                          Icons.history,
-                          size: 80,
-                          color: Colors.grey.shade300,
+            child: _isLoading
+                ? const Center(child: CircularProgressIndicator())
+                : _errorMessage != null
+                    ? Center(
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Icon(
+                              Icons.error_outline,
+                              size: 80,
+                              color: Colors.grey.shade300,
+                            ),
+                            const SizedBox(height: 16),
+                            Text(
+                              _errorMessage!,
+                              style: TextStyle(
+                                fontSize: 16,
+                                color: Colors.grey.shade600,
+                              ),
+                            ),
+                            const SizedBox(height: 16),
+                            ElevatedButton(
+                              onPressed: _loadHistory,
+                              child: const Text('重試'),
+                            ),
+                          ],
                         ),
-                        const SizedBox(height: 16),
-                        Text(
-                          '尚無叫車紀錄',
-                          style: TextStyle(
-                            fontSize: 18,
-                            color: Colors.grey.shade500,
+                      )
+                    : _rideHistory.isEmpty
+                        ? Center(
+                            child: Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Icon(
+                                  Icons.history,
+                                  size: 80,
+                                  color: Colors.grey.shade300,
+                                ),
+                                const SizedBox(height: 16),
+                                Text(
+                                  '尚無叫車紀錄',
+                                  style: TextStyle(
+                                    fontSize: 18,
+                                    color: Colors.grey.shade500,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          )
+                        : RefreshIndicator(
+                            onRefresh: _loadHistory,
+                            child: ListView.builder(
+                              padding: const EdgeInsets.all(16),
+                              itemCount: _rideHistory.length,
+                              itemBuilder: (context, index) {
+                                return _buildRideCard(_rideHistory[index]);
+                              },
+                            ),
                           ),
-                        ),
-                      ],
-                    ),
-                  )
-                : ListView.builder(
-                    padding: const EdgeInsets.all(16),
-                    itemCount: _rideHistory.length,
-                    itemBuilder: (context, index) {
-                      return _buildRideCard(_rideHistory[index]);
-                    },
-                  ),
           ),
         ],
       ),
@@ -142,7 +144,7 @@ class _RideHistoryPageState extends State<RideHistoryPage> {
                   children: [
                     // Time
                     Text(
-                      _formatDate(ride.dateTime),
+                      _formatDate(ride.createDateTime),
                       style: TextStyle(
                         fontSize: 14,
                         color: Colors.grey.shade600,
@@ -151,11 +153,13 @@ class _RideHistoryPageState extends State<RideHistoryPage> {
                     const SizedBox(height: 8),
                     // Pickup Address
                     Text(
-                      ride.pickupAddress,
+                      ride.onAddress,
                       style: const TextStyle(
                         fontSize: 16,
                         fontWeight: FontWeight.bold,
                       ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
                     ),
                   ],
                 ),
@@ -172,22 +176,24 @@ class _RideHistoryPageState extends State<RideHistoryPage> {
                       vertical: 4,
                     ),
                     decoration: BoxDecoration(
-                      color: _getStatusColor(ride.status).withValues(alpha: 0.1),
+                      color: _getStatusColor(ride.caseState).withValues(alpha: 0.1),
                       borderRadius: BorderRadius.circular(12),
                     ),
                     child: Text(
-                      _getStatusText(ride.status),
+                      ride.statusText,
                       style: TextStyle(
                         fontSize: 12,
                         fontWeight: FontWeight.bold,
-                        color: _getStatusColor(ride.status),
+                        color: _getStatusColor(ride.caseState),
                       ),
                     ),
                   ),
                   const SizedBox(height: 8),
                   // Fare
                   Text(
-                    'NT\$ ${ride.fare.toStringAsFixed(0)}',
+                    ride.caseMoney != null 
+                        ? 'NT\$ ${ride.caseMoney!.toStringAsFixed(0)}'
+                        : '-',
                     style: const TextStyle(
                       fontSize: 18,
                       fontWeight: FontWeight.bold,
@@ -220,23 +226,20 @@ class _RideHistoryPageState extends State<RideHistoryPage> {
 
   Color _getStatusColor(String status) {
     switch (status) {
-      case 'completed':
+      case 'finished':
         return Colors.green;
-      case 'cancelled':
+      case 'canceled':
         return Colors.red;
+      case 'wait':
+      case 'dispatching':
+        return Colors.orange;
+      case 'way_to_catch':
+      case 'arrived':
+      case 'catched':
+      case 'on_road':
+        return Colors.blue;
       default:
         return Colors.grey;
-    }
-  }
-
-  String _getStatusText(String status) {
-    switch (status) {
-      case 'completed':
-        return '已完成';
-      case 'cancelled':
-        return '已取消';
-      default:
-        return '未知';
     }
   }
 }
