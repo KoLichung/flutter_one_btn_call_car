@@ -29,26 +29,25 @@ class _RideDetailPageState extends State<RideDetailPage> {
     // 使用实际的订单位置
     _pickupLocation = LatLng(widget.ride.onLat, widget.ride.onLng);
     
-    // 如果有下车位置，使用实际位置；否则使用模拟位置
+    // 检查是否有下车位置
     if (widget.ride.offLat != null && widget.ride.offLng != null) {
+      // 有终点，使用实际位置
       _dropoffLocation = LatLng(widget.ride.offLat!, widget.ride.offLng!);
+      
+      // 生成路线点（起点 -> 中间点 -> 终点）
+      _routePoints = [
+        _pickupLocation,
+        LatLng(
+          (_pickupLocation.latitude + _dropoffLocation.latitude) / 2,
+          (_pickupLocation.longitude + _dropoffLocation.longitude) / 2,
+        ),
+        _dropoffLocation,
+      ];
     } else {
-      // 如果没有下车位置，使用上车位置附近的模拟位置
-      _dropoffLocation = LatLng(
-        widget.ride.onLat + 0.01,
-        widget.ride.onLng + 0.01,
-      );
+      // 没有终点，只有起点
+      _dropoffLocation = _pickupLocation;
+      _routePoints = [_pickupLocation]; // 只有一个点
     }
-    
-    // Mock route points between pickup and dropoff
-    _routePoints = [
-      _pickupLocation,
-      LatLng(
-        (_pickupLocation.latitude + _dropoffLocation.latitude) / 2,
-        (_pickupLocation.longitude + _dropoffLocation.longitude) / 2,
-      ),
-      _dropoffLocation,
-    ];
   }
 
   @override
@@ -177,7 +176,8 @@ class _RideDetailPageState extends State<RideDetailPage> {
   }
 
   Set<Marker> _buildMarkers() {
-    return {
+    Set<Marker> markers = {
+      // 起点（绿色）
       Marker(
         markerId: const MarkerId('pickup'),
         position: _pickupLocation,
@@ -187,20 +187,35 @@ class _RideDetailPageState extends State<RideDetailPage> {
           snippet: widget.ride.onAddress,
         ),
       ),
-      if (widget.ride.offAddress != null)
+    };
+    
+    // 只有在有终点且不同于起点时才添加终点标记
+    if (widget.ride.offLat != null && 
+        widget.ride.offLng != null &&
+        (widget.ride.offLat != widget.ride.onLat || 
+         widget.ride.offLng != widget.ride.onLng)) {
+      markers.add(
         Marker(
           markerId: const MarkerId('dropoff'),
           position: _dropoffLocation,
           icon: BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueRed),
           infoWindow: InfoWindow(
             title: '下車地點',
-            snippet: widget.ride.offAddress,
+            snippet: widget.ride.offAddress ?? '',
           ),
         ),
-    };
+      );
+    }
+    
+    return markers;
   }
 
   Set<Polyline> _buildPolylines() {
+    // 只有在有多个点时才画线
+    if (_routePoints.length < 2) {
+      return {};
+    }
+    
     return {
       Polyline(
         polylineId: const PolylineId('route'),
@@ -212,29 +227,43 @@ class _RideDetailPageState extends State<RideDetailPage> {
   }
 
   void _fitMapToRoute() {
-    if (_mapController != null) {
-      double minLat = _routePoints[0].latitude;
-      double maxLat = _routePoints[0].latitude;
-      double minLng = _routePoints[0].longitude;
-      double maxLng = _routePoints[0].longitude;
-
-      for (var point in _routePoints) {
-        if (point.latitude < minLat) minLat = point.latitude;
-        if (point.latitude > maxLat) maxLat = point.latitude;
-        if (point.longitude < minLng) minLng = point.longitude;
-        if (point.longitude > maxLng) maxLng = point.longitude;
-      }
-
+    if (_mapController == null) return;
+    
+    // 如果只有一个点，直接居中显示
+    if (_routePoints.length == 1) {
       _mapController!.animateCamera(
-        CameraUpdate.newLatLngBounds(
-          LatLngBounds(
-            southwest: LatLng(minLat, minLng),
-            northeast: LatLng(maxLat, maxLng),
+        CameraUpdate.newCameraPosition(
+          CameraPosition(
+            target: _routePoints[0],
+            zoom: 15,
           ),
-          80, // padding
         ),
       );
+      return;
     }
+    
+    // 有多个点，计算边界
+    double minLat = _routePoints[0].latitude;
+    double maxLat = _routePoints[0].latitude;
+    double minLng = _routePoints[0].longitude;
+    double maxLng = _routePoints[0].longitude;
+
+    for (var point in _routePoints) {
+      if (point.latitude < minLat) minLat = point.latitude;
+      if (point.latitude > maxLat) maxLat = point.latitude;
+      if (point.longitude < minLng) minLng = point.longitude;
+      if (point.longitude > maxLng) maxLng = point.longitude;
+    }
+
+    _mapController!.animateCamera(
+      CameraUpdate.newLatLngBounds(
+        LatLngBounds(
+          southwest: LatLng(minLat, minLng),
+          northeast: LatLng(maxLat, maxLng),
+        ),
+        80, // padding
+      ),
+    );
   }
 
   String _formatDateTime(DateTime dateTime) {

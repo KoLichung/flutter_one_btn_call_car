@@ -88,45 +88,28 @@ class _CallCarPageState extends State<CallCarPage> {
     } catch (e) {
       print('Error getting location: $e');
       setState(() {
-        _currentAddress = '台北市';
+        _currentAddress = '获取位置失败';
       });
     }
   }
 
   Future<void> _getAddressFromLatLng(double lat, double lng) async {
-    // TODO: 使用 Geocoding API 获取地址
-    // 暂时使用简单的地址
+    // 显示经纬度（6位小数）
     setState(() {
-      _currentAddress = '台北市 (${lat.toStringAsFixed(4)}, ${lng.toStringAsFixed(4)})';
+      _currentAddress = '${lat.toStringAsFixed(6)}, ${lng.toStringAsFixed(6)}';
     });
   }
 
   void _fitBoundsToShowBothPositions() {
     if (_driverPosition == null || _mapController == null) return;
 
-    double southLat = _currentPosition.latitude < _driverPosition!.latitude
-        ? _currentPosition.latitude
-        : _driverPosition!.latitude;
-    double northLat = _currentPosition.latitude > _driverPosition!.latitude
-        ? _currentPosition.latitude
-        : _driverPosition!.latitude;
-    double westLng = _currentPosition.longitude < _driverPosition!.longitude
-        ? _currentPosition.longitude
-        : _driverPosition!.longitude;
-    double eastLng = _currentPosition.longitude > _driverPosition!.longitude
-        ? _currentPosition.longitude
-        : _driverPosition!.longitude;
+    // 计算乘客和司机的中间点
+    double centerLat = (_currentPosition.latitude + _driverPosition!.latitude) / 2;
+    double centerLng = (_currentPosition.longitude + _driverPosition!.longitude) / 2;
 
-    double latPadding = (northLat - southLat) * 0.3;
-    double lngPadding = (eastLng - westLng) * 0.3;
-
-    LatLngBounds bounds = LatLngBounds(
-      southwest: LatLng(southLat - latPadding, westLng - lngPadding),
-      northeast: LatLng(northLat + latPadding, eastLng + lngPadding),
-    );
-
+    // 移动到中间点，保持当前缩放比例
     _mapController!.animateCamera(
-      CameraUpdate.newLatLngBounds(bounds, 100),
+      CameraUpdate.newLatLng(LatLng(centerLat, centerLng)),
     );
   }
 
@@ -632,24 +615,29 @@ class _CallCarPageState extends State<CallCarPage> {
 
         // 更新司机位置
         if (result['driver_lat'] != null && result['driver_lng'] != null) {
-          _driverPosition = LatLng(
+          final newDriverPosition = LatLng(
             result['driver_lat'],
             result['driver_lng'],
           );
+          
+          // 只在第一次获取司机位置或司机位置明显变化时才更新地图
+          bool shouldUpdateMap = _driverPosition == null;
+          
+          _driverPosition = newDriverPosition;
 
-          // 如果有司机位置，调整地图显示范围
-          if (_driver != null) {
+          // 如果是第一次获取司机位置，移动到中间点
+          if (shouldUpdateMap && _driver != null) {
             _fitBoundsToShowBothPositions();
           }
         }
 
         // 更新状态
-        _updateStateFromCaseState(_caseState);
+        _updateStateFromCaseState(_caseState, result);
       });
     });
   }
 
-  void _updateStateFromCaseState(String caseState) {
+  void _updateStateFromCaseState(String caseState, Map<String, dynamic> result) {
     switch (caseState) {
       case 'wait':
       case 'dispatching':
@@ -666,7 +654,7 @@ class _CallCarPageState extends State<CallCarPage> {
         _state = CallCarState.onBoard;
         break;
       case 'finished':
-        _handleTripFinished();
+        _handleTripFinished(result);
         break;
       case 'canceled':
         _handleTripCanceled();
@@ -674,8 +662,11 @@ class _CallCarPageState extends State<CallCarPage> {
     }
   }
 
-  void _handleTripFinished() {
+  void _handleTripFinished(Map<String, dynamic> result) {
     _rideService.stopTracking();
+    
+    // 获取车资
+    final caseMoney = result['case_money'];
     
     // 显示行程结束对话框
     showDialog(
@@ -683,16 +674,38 @@ class _CallCarPageState extends State<CallCarPage> {
       barrierDismissible: false,
       builder: (context) => AlertDialog(
         title: const Text('行程結束'),
-        content: const Column(
+        content: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(Icons.check_circle, color: Colors.green, size: 64),
-            SizedBox(height: 16),
-            Text(
+            const Icon(Icons.check_circle, color: Colors.green, size: 64),
+            const SizedBox(height: 16),
+            const Text(
               '感謝您的使用',
               style: TextStyle(fontSize: 18),
               textAlign: TextAlign.center,
             ),
+            if (caseMoney != null) ...[
+              const SizedBox(height: 24),
+              const Divider(),
+              const SizedBox(height: 16),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  const Text(
+                    '本次車資：',
+                    style: TextStyle(fontSize: 16),
+                  ),
+                  Text(
+                    'NT\$ ${caseMoney.toStringAsFixed(0)}',
+                    style: const TextStyle(
+                      fontSize: 24,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.blue,
+                    ),
+                  ),
+                ],
+              ),
+            ],
           ],
         ),
         actions: [

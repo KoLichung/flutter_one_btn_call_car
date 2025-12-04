@@ -1,3 +1,6 @@
+android/app/google-services.json
+ios/Runner/GoogleService-Info.plist
+
 # Miscellaneous
 *.class
 *.log
@@ -47,3 +50,9 @@ app.*.map.json
 # API Keys and Secrets - DO NOT COMMIT!
 android/google_maps_api.properties
 ios/Flutter/Secrets.xcconfig
+
+# Android Signing Keys - DO NOT COMMIT!
+android/key.properties
+android/app/upload-keystore.jks
+*.jks
+*.keystore

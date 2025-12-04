@@ -1,9 +1,39 @@
 import 'package:flutter/material.dart';
+import 'package:firebase_core/firebase_core.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
+import 'firebase_options.dart';
 import 'screens/login_page.dart';
 import 'screens/home_page.dart';
 import 'services/auth_service.dart';
+import 'services/line_login_service.dart';
+import 'services/fcm_service.dart';
 
-void main() {
+/// 全局的后台消息处理函数（必须在 main 之外）
+@pragma('vm:entry-point')
+Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
+  // 确保 Firebase 已初始化
+  await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
+  print('🔔 背景通知: ${message.notification?.title}');
+  print('📨 背景訊息: ${message.data}');
+}
+
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  
+  // 初始化 Firebase
+  await Firebase.initializeApp(
+    options: DefaultFirebaseOptions.currentPlatform,
+  );
+  
+  // 设置后台消息处理器
+  FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
+  
+  // 初始化 LINE SDK
+  await LineLoginService().initialize('2008591636');
+  
+  // 初始化 FCM（请求权限并获取 Token）
+  await FcmService().initialize();
+  
   runApp(const MyApp());
 }
 

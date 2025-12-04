@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'home_page.dart';
 import 'register_page.dart';
 import '../services/auth_service.dart';
+import '../services/line_login_service.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
@@ -15,6 +16,7 @@ class _LoginPageState extends State<LoginPage> {
   final _passwordController = TextEditingController();
   final _formKey = GlobalKey<FormState>();
   final AuthService _authService = AuthService();
+  final LineLoginService _lineLoginService = LineLoginService();
   bool _isLoading = false;
 
   @override
@@ -58,14 +60,34 @@ class _LoginPageState extends State<LoginPage> {
     }
   }
 
-  void _handleLineLogin() {
-    // TODO: 实现 LINE 登录
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('LINE 登录功能开发中'),
-        backgroundColor: Colors.orange,
-      ),
-    );
+  Future<void> _handleLineLogin() async {
+    setState(() {
+      _isLoading = true;
+    });
+
+    final result = await _lineLoginService.login();
+
+    setState(() {
+      _isLoading = false;
+    });
+
+    if (result['success'] == true) {
+      if (mounted) {
+        Navigator.of(context).pushReplacement(
+          MaterialPageRoute(builder: (context) => const HomePage()),
+        );
+      }
+    } else if (result['cancelled'] != true) {
+      // 如果不是用户主动取消，才显示错误
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(result['message'] ?? 'LINE 登入失敗'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    }
   }
 
   void _navigateToRegister() {

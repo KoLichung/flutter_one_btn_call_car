@@ -3,6 +3,8 @@ plugins {
     id("kotlin-android")
     // The Flutter Gradle Plugin must be applied after the Android and Kotlin Gradle plugins.
     id("dev.flutter.flutter-gradle-plugin")
+    // Google Services plugin for Firebase
+    id("com.google.gms.google-services")
 }
 
 // Load Google Maps API Key from properties file
@@ -44,6 +46,9 @@ android {
         
         // Inject Google Maps API Key as manifest placeholder
         manifestPlaceholders["GOOGLE_MAPS_API_KEY"] = googleMapsApiKey
+        
+        // Inject LINE Channel ID as manifest placeholder
+        manifestPlaceholders["line_channel_id"] = "2008591636"
     }
 
     buildTypes {

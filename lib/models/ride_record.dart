@@ -15,15 +15,15 @@ class RideRecord {
   final String? driverNickName;
   @JsonKey(name: 'driver_name')
   final String? driverName;
-  @JsonKey(name: 'on_lat')
+  @JsonKey(name: 'on_lat', fromJson: _parseDouble, toJson: _doubleToString)
   final double onLat;
-  @JsonKey(name: 'on_lng')
+  @JsonKey(name: 'on_lng', fromJson: _parseDouble, toJson: _doubleToString)
   final double onLng;
   @JsonKey(name: 'on_address')
   final String onAddress;
-  @JsonKey(name: 'off_lat')
+  @JsonKey(name: 'off_lat', fromJson: _parseDoubleNullable, toJson: _doubleToStringNullable)
   final double? offLat;
-  @JsonKey(name: 'off_lng')
+  @JsonKey(name: 'off_lng', fromJson: _parseDoubleNullable, toJson: _doubleToStringNullable)
   final double? offLng;
   @JsonKey(name: 'off_address')
   final String? offAddress;
@@ -53,6 +53,29 @@ class RideRecord {
     this.offTime,
     this.memo,
   });
+
+  // 自定义解析方法：处理字符串或数字
+  static double _parseDouble(dynamic value) {
+    if (value is double) return value;
+    if (value is int) return value.toDouble();
+    if (value is String) return double.parse(value);
+    return 0.0;
+  }
+
+  static double? _parseDoubleNullable(dynamic value) {
+    if (value == null) return null;
+    if (value is double) return value;
+    if (value is int) return value.toDouble();
+    if (value is String) {
+      if (value.isEmpty) return null;
+      return double.parse(value);
+    }
+    return null;
+  }
+
+  static String _doubleToString(double value) => value.toString();
+  
+  static String? _doubleToStringNullable(double? value) => value?.toString();
 
   factory RideRecord.fromJson(Map<String, dynamic> json) => _$RideRecordFromJson(json);
   Map<String, dynamic> toJson() => _$RideRecordToJson(this);
