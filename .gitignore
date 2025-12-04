@@ -50,6 +50,7 @@ app.*.map.json
 # API Keys and Secrets - DO NOT COMMIT!
 android/google_maps_api.properties
 ios/Flutter/Secrets.xcconfig
+lib/firebase_options.dart
 
 # Android Signing Keys - DO NOT COMMIT!
 android/key.properties
