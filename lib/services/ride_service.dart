@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'package:dio/dio.dart';
 import '../models/ride_record.dart';
 import '../models/driver.dart';
 import 'api_service.dart';
@@ -7,7 +8,13 @@ class RideService {
   final ApiService _api = ApiService();
   Timer? _trackingTimer;
 
-  // 一键叫车
+  // 格式化經緯度，限制為6位小數（精確到約0.11米）
+  // 服務器要求總位數不超過9位，格式如：25.123456 或 121.123456
+  double _formatCoordinate(double coordinate) {
+    return double.parse(coordinate.toStringAsFixed(6));
+  }
+
+  // 一鍵叫車
   Future<Map<String, dynamic>> callCar({
     required double onLat,
     required double onLng,
@@ -21,11 +28,11 @@ class RideService {
   }) async {
     try {
       final response = await _api.post('call-car/', data: {
-        'on_lat': onLat,
-        'on_lng': onLng,
+        'on_lat': _formatCoordinate(onLat),
+        'on_lng': _formatCoordinate(onLng),
         'on_address': onAddress,
-        if (offLat != null) 'off_lat': offLat,
-        if (offLng != null) 'off_lng': offLng,
+        if (offLat != null) 'off_lat': _formatCoordinate(offLat),
+        if (offLng != null) 'off_lng': _formatCoordinate(offLng),
         if (offAddress != null) 'off_address': offAddress,
         if (memo != null) 'memo': memo,
         if (customerPhone != null) 'customer_phone': customerPhone,
@@ -44,19 +51,19 @@ class RideService {
 
       return {
         'success': false,
-        'message': response.data['message'] ?? '叫车失败',
+        'message': response.data['message'] ?? '叫車失敗',
       };
     } catch (e) {
-      print('叫车错误: $e');
+      print('叫車錯誤: $e');
       return {
         'success': false,
-        'message': '叫车失败，请检查网络连接',
+        'message': '叫車失敗，請檢查網絡連接',
         'error': e.toString(),
       };
     }
   }
 
-  // 追踪订单（单次）
+  // 追蹤訂單（單次）
   Future<Map<String, dynamic>> trackCase(int caseId) async {
     try {
       final response = await _api.get('case/$caseId/tracking/');
@@ -86,21 +93,21 @@ class RideService {
 
       return {
         'success': false,
-        'message': response.data['message'] ?? '追踪订单失败',
+        'message': response.data['message'] ?? '追蹤訂單失敗',
       };
     } catch (e) {
-      print('追踪订单错误: $e');
+      print('追蹤訂單錯誤: $e');
       return {
         'success': false,
-        'message': '追踪订单失败',
+        'message': '追蹤訂單失敗',
         'error': e.toString(),
       };
     }
   }
 
-  // 开始持续追踪（每3秒）
+  // 開始持續追蹤（每3秒）
   void startTracking(int caseId, Function(Map<String, dynamic>) onUpdate) {
-    stopTracking(); // 先停止之前的追踪
+    stopTracking(); // 先停止之前的追蹤
 
     _trackingTimer = Timer.periodic(
       const Duration(seconds: 3),
@@ -109,7 +116,7 @@ class RideService {
           final result = await trackCase(caseId);
           onUpdate(result);
 
-          // 如果订单完成或取消，停止追踪
+          // 如果訂單完成或取消，停止追蹤
           if (result['success'] == true) {
             final state = result['case_state'];
             if (state == 'finished' || state == 'canceled') {
@@ -117,19 +124,19 @@ class RideService {
             }
           }
         } catch (e) {
-          print('追踪失败: $e');
+          print('追蹤失敗: $e');
         }
       },
     );
   }
 
-  // 停止追踪
+  // 停止追蹤
   void stopTracking() {
     _trackingTimer?.cancel();
     _trackingTimer = null;
   }
 
-  // 取消订单
+  // 取消訂單
   Future<Map<String, dynamic>> cancelCase(int caseId, {String? reason}) async {
     try {
       final response = await _api.post('case/$caseId/cancel/', data: {
@@ -139,25 +146,42 @@ class RideService {
       if (response.data['status'] == 'success') {
         return {
           'success': true,
-          'message': response.data['message'] ?? '订单已取消',
+          'message': response.data['message'] ?? '訂單已取消',
         };
       }
 
       return {
         'success': false,
-        'message': response.data['message'] ?? '取消订单失败',
+        'message': response.data['message'] ?? '取消訂單失敗',
       };
-    } catch (e) {
-      print('取消订单错误: $e');
+    } on DioException catch (e) {
+      print('取消訂單錯誤: $e');
+      
+      // 處理服務器返回的錯誤消息（例如訂單狀態不允許取消）
+      if (e.response?.data != null && e.response?.data is Map) {
+        final data = e.response!.data as Map<String, dynamic>;
+        return {
+          'success': false,
+          'message': data['message'] ?? '取消訂單失敗',
+        };
+      }
+      
       return {
         'success': false,
-        'message': '取消订单失败',
+        'message': '取消訂單失敗，請檢查網絡連接',
+        'error': e.toString(),
+      };
+    } catch (e) {
+      print('取消訂單錯誤: $e');
+      return {
+        'success': false,
+        'message': '取消訂單失敗',
         'error': e.toString(),
       };
     }
   }
 
-  // 获取历史记录
+  // 獲取歷史記錄
   Future<Map<String, dynamic>> getHistory({int page = 1, int pageSize = 20}) async {
     try {
       final response = await _api.get('cases/history/', params: {
@@ -180,21 +204,21 @@ class RideService {
 
       return {
         'success': false,
-        'message': response.data['message'] ?? '获取历史记录失败',
+        'message': response.data['message'] ?? '獲取歷史記錄失敗',
         'cases': <RideRecord>[],
       };
     } catch (e) {
-      print('获取历史记录错误: $e');
+      print('獲取歷史記錄錯誤: $e');
       return {
         'success': false,
-        'message': '获取历史记录失败',
+        'message': '獲取歷史記錄失敗',
         'cases': <RideRecord>[],
         'error': e.toString(),
       };
     }
   }
 
-  // 获取单个订单详情
+  // 獲取單個訂單詳情
   Future<Map<String, dynamic>> getCaseDetail(int caseId) async {
     try {
       final response = await _api.get('case/$caseId/');
@@ -209,21 +233,20 @@ class RideService {
 
       return {
         'success': false,
-        'message': response.data['message'] ?? '获取订单详情失败',
+        'message': response.data['message'] ?? '獲取訂單詳情失敗',
       };
     } catch (e) {
-      print('获取订单详情错误: $e');
+      print('獲取訂單詳情錯誤: $e');
       return {
         'success': false,
-        'message': '获取订单详情失败',
+        'message': '獲取訂單詳情失敗',
         'error': e.toString(),
       };
     }
   }
 
-  // 清理资源
+  // 清理資源
   void dispose() {
     stopTracking();
   }
 }
-

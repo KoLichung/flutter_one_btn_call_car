@@ -51,7 +51,7 @@ class _LoginPageState extends State<LoginPage> {
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-              content: Text(result['message'] ?? '登录失败'),
+              content: Text(result['message'] ?? '登入失败'),
               backgroundColor: Colors.red,
             ),
           );

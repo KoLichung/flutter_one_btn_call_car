@@ -32,7 +32,7 @@ class _CallCarPageState extends State<CallCarPage> {
   CallCarState _state = CallCarState.idle;
   LatLng _currentPosition = const LatLng(25.0330, 121.5654); // Default Taipei
   LatLng? _driverPosition;
-  String _currentAddress = '获取位置中...';
+  String _currentAddress = '獲取位置中...';
   
   // 订单信息
   int? _currentCaseId;
@@ -88,7 +88,7 @@ class _CallCarPageState extends State<CallCarPage> {
     } catch (e) {
       print('Error getting location: $e');
       setState(() {
-        _currentAddress = '获取位置失败';
+        _currentAddress = '獲取位置失敗';
       });
     }
   }
@@ -376,7 +376,7 @@ class _CallCarPageState extends State<CallCarPage> {
               _buildCallButton(),
             
             if (_state == CallCarState.calling)
-              _buildLoadingState('正在叫车...'),
+              _buildLoadingState('正在叫車...'),
             
             if (_state == CallCarState.waiting)
               _buildWaitingState(),
@@ -455,7 +455,7 @@ class _CallCarPageState extends State<CallCarPage> {
         ),
         const SizedBox(height: 16),
         Text(
-          '正在寻找司机...',
+          '正在尋找司機...',
           style: const TextStyle(
             fontSize: 18,
             fontWeight: FontWeight.bold,
@@ -465,7 +465,7 @@ class _CallCarPageState extends State<CallCarPage> {
         if (_caseNumber != null) ...[
           const SizedBox(height: 8),
           Text(
-            '订单号: $_caseNumber',
+            '訂單號: $_caseNumber',
             style: TextStyle(
               fontSize: 12,
               color: Colors.grey.shade600,
@@ -481,7 +481,7 @@ class _CallCarPageState extends State<CallCarPage> {
               foregroundColor: Colors.red,
               side: const BorderSide(color: Colors.red),
             ),
-            child: const Text('取消叫车'),
+            child: const Text('取消叫車'),
           ),
         ),
       ],
@@ -542,7 +542,7 @@ class _CallCarPageState extends State<CallCarPage> {
         ),
         SizedBox(height: 16),
         Text(
-          '行程进行中，祝您旅途愉快',
+          '行程進行中，祝您旅途愉快',
           style: TextStyle(
             fontSize: 18,
             fontWeight: FontWeight.bold,
@@ -591,7 +591,7 @@ class _CallCarPageState extends State<CallCarPage> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text(result['message'] ?? '叫车失败'),
+            content: Text(result['message'] ?? '叫車失敗'),
             backgroundColor: Colors.red,
           ),
         );
@@ -727,8 +727,8 @@ class _CallCarPageState extends State<CallCarPage> {
     if (mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: Text('订单已取消'),
-          backgroundColor: Colors.orange,
+          content: Text('訂單已取消(可能暫時附近無司機)'),
+          backgroundColor: Colors.red,
         ),
       );
     }
@@ -742,8 +742,8 @@ class _CallCarPageState extends State<CallCarPage> {
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('确认取消'),
-        content: const Text('确定要取消叫车吗？'),
+        title: const Text('確認取消'),
+        content: const Text('確認要取消叫車嗎？'),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(context).pop(false),
@@ -755,7 +755,7 @@ class _CallCarPageState extends State<CallCarPage> {
               backgroundColor: Colors.red,
               foregroundColor: Colors.white,
             ),
-            child: const Text('确定取消'),
+            child: const Text('確認取消'),
           ),
         ],
       ),
@@ -770,9 +770,19 @@ class _CallCarPageState extends State<CallCarPage> {
         
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('已取消叫车'),
-              backgroundColor: Colors.orange,
+            SnackBar(
+              content: Text(result['message'] ?? '訂單已成功取消'),
+              backgroundColor: Colors.green,
+            ),
+          );
+        }
+      } else {
+        // 取消失敗，顯示錯誤消息
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(result['message'] ?? '取消訂單失敗'),
+              backgroundColor: Colors.red,
             ),
           );
         }

@@ -51,7 +51,7 @@ class _RegisterPageState extends State<RegisterPage> {
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-              content: Text(result['message'] ?? '注册失败'),
+              content: Text(result['message'] ?? '注册失敗'),
               backgroundColor: Colors.red,
             ),
           );
