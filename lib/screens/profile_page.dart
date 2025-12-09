@@ -3,6 +3,7 @@ import '../models/customer.dart';
 import '../services/auth_service.dart';
 import 'ride_history_page.dart';
 import 'login_page.dart';
+import 'profile_detail_page.dart';
 
 class ProfilePage extends StatefulWidget {
   const ProfilePage({super.key});
@@ -145,19 +146,8 @@ class _ProfilePageState extends State<ProfilePage> {
               padding: const EdgeInsets.symmetric(horizontal: 16),
               child: Column(
                 children: [
-                  // Login Method Card
-                  _buildInfoCard(
-                    icon: _currentCustomer!.loginMethod == 'phone' 
-                        ? Icons.phone_android 
-                        : Icons.chat_bubble,
-                    title: '登入方式',
-                    subtitle: _currentCustomer!.loginMethod == 'phone'
-                        ? '手機登入(${_currentCustomer!.phone ?? ''})'
-                        : 'LINE 登入',
-                    color: _currentCustomer!.loginMethod == 'phone'
-                        ? Colors.blue
-                        : const Color(0xFF00B900),
-                  ),
+                  // Login Method Card (Clickable)
+                  _buildLoginMethodCard(),
                   const SizedBox(height: 12),
                   
                   // Menu Items
@@ -197,6 +187,89 @@ class _ProfilePageState extends State<ProfilePage> {
               ),
             ),
           ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildLoginMethodCard() {
+    IconData icon;
+    String subtitle;
+    Color color;
+
+    switch (_currentCustomer!.loginMethod) {
+      case 'phone':
+        icon = Icons.phone_android;
+        subtitle = '手機登入 (${_currentCustomer!.phone ?? ''})';
+        color = Colors.blue;
+        break;
+      case 'line':
+        icon = Icons.chat_bubble;
+        subtitle = 'LINE 登入';
+        color = const Color(0xFF00B900);
+        break;
+      case 'apple':
+        icon = Icons.apple;
+        subtitle = 'Apple 登入';
+        color = Colors.black;
+        break;
+      default:
+        icon = Icons.person;
+        subtitle = '未知登入方式';
+        color = Colors.grey;
+    }
+
+    return Card(
+      elevation: 2,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      child: InkWell(
+        onTap: () {
+          Navigator.of(context).push(
+            MaterialPageRoute(
+              builder: (context) => ProfileDetailPage(customer: _currentCustomer!),
+            ),
+          );
+        },
+        borderRadius: BorderRadius.circular(12),
+        child: Padding(
+          padding: const EdgeInsets.all(16),
+          child: Row(
+            children: [
+              Container(
+                width: 48,
+                height: 48,
+                decoration: BoxDecoration(
+                  color: color.withValues(alpha: 0.1),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Icon(icon, color: color, size: 24),
+              ),
+              const SizedBox(width: 16),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      '登入方式',
+                      style: TextStyle(
+                        fontSize: 12,
+                        color: Colors.grey.shade600,
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      subtitle,
+                      style: const TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              Icon(Icons.arrow_forward_ios, size: 16, color: Colors.grey.shade400),
+            ],
+          ),
         ),
       ),
     );

@@ -1,8 +1,10 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'home_page.dart';
 import 'register_page.dart';
 import '../services/auth_service.dart';
 import '../services/line_login_service.dart';
+import '../services/apple_login_service.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
@@ -17,7 +19,26 @@ class _LoginPageState extends State<LoginPage> {
   final _formKey = GlobalKey<FormState>();
   final AuthService _authService = AuthService();
   final LineLoginService _lineLoginService = LineLoginService();
+  final AppleLoginService _appleLoginService = AppleLoginService();
   bool _isLoading = false;
+  bool _isAppleSignInAvailable = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _checkAppleSignInAvailability();
+  }
+
+  Future<void> _checkAppleSignInAvailability() async {
+    if (Platform.isIOS) {
+      final available = await _appleLoginService.isAvailable();
+      if (mounted) {
+        setState(() {
+          _isAppleSignInAvailable = available;
+        });
+      }
+    }
+  }
 
   @override
   void dispose() {
@@ -83,6 +104,36 @@ class _LoginPageState extends State<LoginPage> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(result['message'] ?? 'LINE 登入失敗'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    }
+  }
+
+  Future<void> _handleAppleLogin() async {
+    setState(() {
+      _isLoading = true;
+    });
+
+    final result = await _appleLoginService.login();
+
+    setState(() {
+      _isLoading = false;
+    });
+
+    if (result['success'] == true) {
+      if (mounted) {
+        Navigator.of(context).pushReplacement(
+          MaterialPageRoute(builder: (context) => const HomePage()),
+        );
+      }
+    } else if (result['cancelled'] != true) {
+      // 如果不是用户主动取消，才显示错误
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(result['message'] ?? 'Apple 登入失敗'),
             backgroundColor: Colors.red,
           ),
         );
@@ -262,7 +313,7 @@ class _LoginPageState extends State<LoginPage> {
                               width: double.infinity,
                               height: 50,
                               child: ElevatedButton.icon(
-                                onPressed: _handleLineLogin,
+                                onPressed: _isLoading ? null : _handleLineLogin,
                                 icon: const Icon(Icons.chat_bubble, size: 24),
                                 label: const Text(
                                   'LINE 登入',
@@ -280,6 +331,33 @@ class _LoginPageState extends State<LoginPage> {
                                 ),
                               ),
                             ),
+                            
+                            // Apple Sign In Button (iOS only)
+                            if (_isAppleSignInAvailable) ...[
+                              const SizedBox(height: 16),
+                              SizedBox(
+                                width: double.infinity,
+                                height: 50,
+                                child: ElevatedButton.icon(
+                                  onPressed: _isLoading ? null : _handleAppleLogin,
+                                  icon: const Icon(Icons.apple, size: 24),
+                                  label: const Text(
+                                    'Apple 登入',
+                                    style: TextStyle(
+                                      fontSize: 16,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                  style: ElevatedButton.styleFrom(
+                                    backgroundColor: Colors.black,
+                                    foregroundColor: Colors.white,
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(12),
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ],
                             const SizedBox(height: 20),
                             
                             // Divider

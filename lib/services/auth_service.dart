@@ -163,6 +163,77 @@ class AuthService {
     }
   }
 
+  // Apple 登入
+  Future<Map<String, dynamic>> appleLogin({
+    required String appleUserId,
+    String? appleEmail,
+    String? appleFamilyName,
+    String? appleGivenName,
+  }) async {
+    try {
+      final response = await _api.post('auth/apple-login/', data: {
+        'apple_user_id': appleUserId,
+        if (appleEmail != null) 'apple_email': appleEmail,
+        if (appleFamilyName != null) 'apple_family_name': appleFamilyName,
+        if (appleGivenName != null) 'apple_given_name': appleGivenName,
+      });
+
+      if (response.data['status'] == 'success') {
+        final customer = Customer.fromJson(response.data['customer']);
+        await _storage.saveCustomer(customer);
+        await _storage.saveCustomerId(response.data['customer_id']);
+
+        // Apple 登入成功後，註冊 FCM
+        await _fcmService.registerToServer();
+
+        return {
+          'success': true,
+          'message': response.data['message'],
+          'customer': customer,
+        };
+      }
+
+      return {
+        'success': false,
+        'message': response.data['message'] ?? 'Apple 登入失敗',
+      };
+    } on DioException catch (e) {
+      print('Apple 登入錯誤: $e');
+      
+      if (e.response?.statusCode == 400) {
+        final errorMsg = e.response?.data['message'] ?? 'Apple 登入資料有誤';
+        return {
+          'success': false,
+          'message': errorMsg,
+        };
+      } else if (e.type == DioExceptionType.connectionTimeout ||
+                 e.type == DioExceptionType.receiveTimeout) {
+        return {
+          'success': false,
+          'message': '網路連線逾時，請檢查網路',
+        };
+      } else if (e.type == DioExceptionType.connectionError) {
+        return {
+          'success': false,
+          'message': '無法連接伺服器，請檢查網路',
+        };
+      }
+      
+      return {
+        'success': false,
+        'message': 'Apple 登入失敗，請稍後再試',
+        'error': e.toString(),
+      };
+    } catch (e) {
+      print('Apple 登入未知錯誤: $e');
+      return {
+        'success': false,
+        'message': 'Apple 登入失敗，請稍後再試',
+        'error': e.toString(),
+      };
+    }
+  }
+
   // 獲取用戶資料
   Future<Map<String, dynamic>> getProfile() async {
     try {

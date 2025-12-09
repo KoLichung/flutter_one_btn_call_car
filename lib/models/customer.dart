@@ -17,6 +17,14 @@ class Customer {
   final String? lineDisplayName;
   @JsonKey(name: 'line_picture_url')
   final String? linePictureUrl;
+  @JsonKey(name: 'apple_user_id')
+  final String? appleUserId;
+  @JsonKey(name: 'apple_email')
+  final String? appleEmail;
+  @JsonKey(name: 'apple_family_name')
+  final String? appleFamilyName;
+  @JsonKey(name: 'apple_given_name')
+  final String? appleGivenName;
   @JsonKey(name: 'created_at')
   final String? createdAt;
 
@@ -29,6 +37,10 @@ class Customer {
     this.lineUserId,
     this.lineDisplayName,
     this.linePictureUrl,
+    this.appleUserId,
+    this.appleEmail,
+    this.appleFamilyName,
+    this.appleGivenName,
     this.createdAt,
   });
 
@@ -42,6 +54,8 @@ class Customer {
   String get loginMethod {
     if (lineUserId != null && lineUserId!.isNotEmpty) {
       return 'line';
+    } else if (appleUserId != null && appleUserId!.isNotEmpty) {
+      return 'apple';
     } else if (phone != null && phone!.isNotEmpty) {
       return 'phone';
     }
