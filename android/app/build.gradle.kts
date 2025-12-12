@@ -1,3 +1,5 @@
+import java.util.Properties
+
 plugins {
     id("com.android.application")
     id("kotlin-android")
@@ -11,7 +13,7 @@ plugins {
 val googleMapsApiKey: String by lazy {
     val propsFile = rootProject.file("google_maps_api.properties")
     if (propsFile.exists()) {
-        val props = java.util.Properties()
+        val props = Properties()
         props.load(propsFile.inputStream())
         props.getProperty("GOOGLE_MAPS_API_KEY", "")
     } else {
