@@ -1,6 +1,5 @@
 import 'package:dio/dio.dart';
-import 'package:cookie_jar/cookie_jar.dart';
-import 'package:dio_cookie_manager/dio_cookie_manager.dart';
+import 'storage_service.dart';
 
 class ApiService {
   static final ApiService _instance = ApiService._internal();
@@ -8,6 +7,7 @@ class ApiService {
 
   late Dio dio;
   final String baseUrl = 'https://ai-taxi-api-5koy2twboa-de.a.run.app/api/one-btn-call-car/';
+  final StorageService _storage = StorageService();
 
   ApiService._internal() {
     dio = Dio(BaseOptions(
@@ -20,9 +20,24 @@ class ApiService {
       },
     ));
 
-    // Cookie 管理（用于 Session 认证）
-    var cookieJar = CookieJar();
-    dio.interceptors.add(CookieManager(cookieJar));
+    // Token 认证拦截器 - 自动添加 Authorization header
+    dio.interceptors.add(InterceptorsWrapper(
+      onRequest: (options, handler) async {
+        // 从本地存储加载 token
+        final token = await _storage.getAuthToken();
+        if (token != null) {
+          options.headers['Authorization'] = 'Token $token';
+        }
+        return handler.next(options);
+      },
+      onError: (error, handler) {
+        print('API Error: ${error.message}');
+        if (error.response?.statusCode == 401) {
+          print('Unauthorized - Token 无效或已过期，需要重新登录');
+        }
+        return handler.next(error);
+      },
+    ));
 
     // 日志拦截器（开发环境）
     dio.interceptors.add(LogInterceptor(
@@ -31,17 +46,6 @@ class ApiService {
       error: true,
       requestHeader: false,
       responseHeader: false,
-    ));
-
-    // 错误处理拦截器
-    dio.interceptors.add(InterceptorsWrapper(
-      onError: (error, handler) {
-        print('API Error: ${error.message}');
-        if (error.response?.statusCode == 401) {
-          print('Unauthorized - 需要登录');
-        }
-        return handler.next(error);
-      },
     ));
   }
 

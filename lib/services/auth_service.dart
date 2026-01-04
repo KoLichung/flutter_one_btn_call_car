@@ -28,6 +28,11 @@ class AuthService {
         await _storage.saveCustomer(customer);
         await _storage.saveCustomerId(response.data['customer_id']);
 
+        // 保存 Token
+        if (response.data['token'] != null) {
+          await _storage.saveAuthToken(response.data['token']);
+        }
+
         // 註冊成功後，註冊 FCM
         await _fcmService.registerToServer();
 
@@ -67,6 +72,11 @@ class AuthService {
         final customer = Customer.fromJson(response.data['customer']);
         await _storage.saveCustomer(customer);
         await _storage.saveCustomerId(response.data['customer_id']);
+
+        // 保存 Token
+        if (response.data['token'] != null) {
+          await _storage.saveAuthToken(response.data['token']);
+        }
 
         // 登入成功後，註冊 FCM
         await _fcmService.registerToServer();
@@ -111,6 +121,11 @@ class AuthService {
         final customer = Customer.fromJson(response.data['customer']);
         await _storage.saveCustomer(customer);
         await _storage.saveCustomerId(response.data['customer_id']);
+
+        // 保存 Token
+        if (response.data['token'] != null) {
+          await _storage.saveAuthToken(response.data['token']);
+        }
 
         // LINE 登入成功後，註冊 FCM
         await _fcmService.registerToServer();
@@ -182,6 +197,11 @@ class AuthService {
         final customer = Customer.fromJson(response.data['customer']);
         await _storage.saveCustomer(customer);
         await _storage.saveCustomerId(response.data['customer_id']);
+
+        // 保存 Token
+        if (response.data['token'] != null) {
+          await _storage.saveAuthToken(response.data['token']);
+        }
 
         // Apple 登入成功後，註冊 FCM
         await _fcmService.registerToServer();
@@ -272,11 +292,11 @@ class AuthService {
       
       // 嘗試調用登出 API（如果服務器有提供的話）
       // await _api.post('auth/logout/');
-      print('登出：清除本地存儲');
+      print('登出：清除本地存儲和 Token');
     } catch (e) {
       print('登出 API 調用失敗（忽略）: $e');
     } finally {
-      // 無論 API 調用是否成功，都清除本地存儲
+      // 無論 API 調用是否成功，都清除本地存儲（包括 Token）
       await _storage.clearCustomer();
     }
   }

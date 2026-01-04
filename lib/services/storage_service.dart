@@ -10,6 +10,7 @@ class StorageService {
   static const String _keyCustomer = 'customer';
   static const String _keyCustomerId = 'customer_id';
   static const String _keyIsLoggedIn = 'is_logged_in';
+  static const String _keyAuthToken = 'auth_token';
 
   // 保存用户信息
   Future<void> saveCustomer(Customer customer) async {
@@ -47,11 +48,24 @@ class StorageService {
     return prefs.getBool(_keyIsLoggedIn) ?? false;
   }
 
+  // 保存认证 Token
+  Future<void> saveAuthToken(String token) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString(_keyAuthToken, token);
+  }
+
+  // 获取认证 Token
+  Future<String?> getAuthToken() async {
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.getString(_keyAuthToken);
+  }
+
   // 清除用户信息（登出）
   Future<void> clearCustomer() async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.remove(_keyCustomer);
     await prefs.remove(_keyCustomerId);
+    await prefs.remove(_keyAuthToken);
     await prefs.setBool(_keyIsLoggedIn, false);
   }
 
