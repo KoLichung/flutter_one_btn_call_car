@@ -6,6 +6,7 @@ import 'package:geolocator/geolocator.dart';
 import '../services/ride_service.dart';
 import '../services/storage_service.dart';
 import '../models/driver.dart';
+import 'chat_page.dart';
 
 enum CallCarState {
   idle,
@@ -34,15 +35,18 @@ class _CallCarPageState extends State<CallCarPage> {
   LatLng? _driverPosition;
   String _currentAddress = '獲取位置中...';
   
-  // 订单信息
+  // 訂單信息
   int? _currentCaseId;
   String? _caseNumber;
   String _caseState = '';
   
-  // 司机信息
+  // 司機信息
   Driver? _driver;
   
-  // UI 状态
+  // 未讀消息數
+  int _unreadMessagesCount = 0;
+  
+  // UI 狀態
   BitmapDescriptor? _carIcon;
   bool _isLoading = false;
 
@@ -77,7 +81,7 @@ class _CallCarPageState extends State<CallCarPage> {
           _currentPosition = LatLng(position.latitude, position.longitude);
         });
 
-        // 获取地址
+        // 獲取地址
         await _getAddressFromLatLng(position.latitude, position.longitude);
 
         // Move camera to current position
@@ -94,7 +98,7 @@ class _CallCarPageState extends State<CallCarPage> {
   }
 
   Future<void> _getAddressFromLatLng(double lat, double lng) async {
-    // 显示经纬度（6位小数）
+    // 顯示經緯度（6位小数）
     setState(() {
       _currentAddress = '${lat.toStringAsFixed(6)}, ${lng.toStringAsFixed(6)}';
     });
@@ -103,11 +107,11 @@ class _CallCarPageState extends State<CallCarPage> {
   void _fitBoundsToShowBothPositions() {
     if (_driverPosition == null || _mapController == null) return;
 
-    // 计算乘客和司机的中间点
+    // 計算乘客和司機的中間點
     double centerLat = (_currentPosition.latitude + _driverPosition!.latitude) / 2;
     double centerLng = (_currentPosition.longitude + _driverPosition!.longitude) / 2;
 
-    // 移动到中间点，保持当前缩放比例
+    // 移動到中間點，保持當前縮放比例
     _mapController!.animateCamera(
       CameraUpdate.newLatLng(LatLng(centerLat, centerLng)),
     );
@@ -260,7 +264,7 @@ class _CallCarPageState extends State<CallCarPage> {
       elevation: 8,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
       child: Padding(
-        padding: const EdgeInsets.all(16.0),
+        padding: const EdgeInsets.all(12.0),
         child: Row(
           children: [
             Container(
@@ -272,7 +276,7 @@ class _CallCarPageState extends State<CallCarPage> {
               ),
               child: const Icon(Icons.person, color: Colors.blue, size: 30),
             ),
-            const SizedBox(width: 16),
+            const SizedBox(width: 8),
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -294,31 +298,147 @@ class _CallCarPageState extends State<CallCarPage> {
                 ],
               ),
             ),
-            if (_state == CallCarState.driverOnWay)
-              Container(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 12,
-                  vertical: 6,
-                ),
-                decoration: BoxDecoration(
-                  color: Colors.green.shade100,
-                  borderRadius: BorderRadius.circular(20),
-                ),
-                child: const Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Icon(Icons.directions_car, size: 16, color: Colors.green),
-                    SizedBox(width: 4),
-                    Text(
-                      '前往中',
+            // 狀態標籤和對話icon靠右對齊
+            Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                // 狀態標籤
+                if (_state == CallCarState.driverOnWay)
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 6,
+                      vertical: 6,
+                    ),
+                    decoration: BoxDecoration(
+                      color: Colors.green.shade100,
+                      borderRadius: BorderRadius.circular(20),
+                    ),
+                    child: const Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(Icons.directions_car, size: 16, color: Colors.green),
+                        SizedBox(width: 4),
+                        Text(
+                          '前往中',
+                          style: TextStyle(
+                            color: Colors.green,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                if (_state == CallCarState.arrived)
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 6,
+                      vertical: 6,
+                    ),
+                    decoration: BoxDecoration(
+                      color: Colors.orange.shade100,
+                      borderRadius: BorderRadius.circular(20),
+                    ),
+                    child: const Text(
+                      '等待接客',
                       style: TextStyle(
-                        color: Colors.green,
+                        color: Colors.orange,
                         fontWeight: FontWeight.bold,
                       ),
                     ),
-                  ],
-                ),
-              ),
+                  ),
+                if (_state == CallCarState.onBoard)
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 6,
+                      vertical: 6,
+                    ),
+                    decoration: BoxDecoration(
+                      color: Colors.blue.shade100,
+                      borderRadius: BorderRadius.circular(20),
+                    ),
+                    child: const Text(
+                      '旅程中',
+                      style: TextStyle(
+                        color: Colors.blue,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ),
+                // 對話icon（旅程中狀態不顯示）
+                if (_state != CallCarState.onBoard) ...[
+                  const SizedBox(width: 8),
+                  Stack(
+                    clipBehavior: Clip.none,
+                    children: [
+                      IconButton(
+                        onPressed: () {
+                        // 進入聊天頁面時停止 tracking
+                        print('🔵 [CallCarPage] 進入聊天頁面，停止 tracking');
+                        _rideService.stopTracking();
+                        
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => ChatPage(
+                              driverName: _driver!.nickName,
+                              driverId: _driver!.id?.toString(),
+                              caseId: _currentCaseId?.toString(),
+                            ),
+                          ),
+                        ).then((_) {
+                          // 從聊天頁面返回時，重置未讀消息數並恢復 tracking
+                          print('🔵 [CallCarPage] 從聊天頁面返回，恢復 tracking');
+                          setState(() {
+                            _unreadMessagesCount = 0;
+                          });
+                          
+                          // 恢復 tracking
+                          if (_currentCaseId != null && 
+                              (_state == CallCarState.driverOnWay || 
+                               _state == CallCarState.arrived || 
+                               _state == CallCarState.onBoard)) {
+                            _startTracking();
+                          }
+                        });
+                      },
+                      icon: const Icon(
+                        Icons.chat_bubble_outline,
+                        color: Colors.blue,
+                        size: 24,
+                      ),
+                        padding: EdgeInsets.zero,
+                        constraints: const BoxConstraints(),
+                      ),
+                      if (_unreadMessagesCount > 0)
+                        Positioned(
+                          right: 0,
+                          top: 0,
+                          child: Container(
+                            padding: const EdgeInsets.all(4),
+                            decoration: BoxDecoration(
+                              color: Colors.red,
+                              shape: BoxShape.circle,
+                            ),
+                            constraints: const BoxConstraints(
+                              minWidth: 16,
+                              minHeight: 16,
+                            ),
+                            child: Text(
+                              _unreadMessagesCount > 99 ? '99+' : '$_unreadMessagesCount',
+                              style: const TextStyle(
+                                color: Colors.white,
+                                fontSize: 10,
+                                fontWeight: FontWeight.bold,
+                              ),
+                              textAlign: TextAlign.center,
+                            ),
+                          ),
+                        ),
+                    ],
+                  ),
+                ],
+              ],
+            ),
           ],
         ),
       ),
@@ -344,7 +464,7 @@ class _CallCarPageState extends State<CallCarPage> {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            // 显示当前地址
+            // 顯示當前地址
             if (_state == CallCarState.idle)
               Container(
                 padding: const EdgeInsets.all(12),
@@ -371,7 +491,7 @@ class _CallCarPageState extends State<CallCarPage> {
             if (_state == CallCarState.idle)
               const SizedBox(height: 16),
             
-            // 按钮或状态信息
+            // 按鈕或狀態信息
             if (_state == CallCarState.idle)
               _buildCallButton(),
             
@@ -554,7 +674,7 @@ class _CallCarPageState extends State<CallCarPage> {
     );
   }
 
-  // API 调用方法
+  // API 調用方法
   Future<void> _handleCallCar() async {
     setState(() {
       _isLoading = true;
@@ -580,7 +700,7 @@ class _CallCarPageState extends State<CallCarPage> {
         _isLoading = false;
       });
 
-      // 开始追踪订单
+      // 開始追蹤訂單
       _startTracking();
     } else {
       setState(() {
@@ -600,38 +720,58 @@ class _CallCarPageState extends State<CallCarPage> {
   }
 
   void _startTracking() {
-    if (_currentCaseId == null) return;
+    if (_currentCaseId == null) {
+      print('🔴 [CallCarPage] _startTracking: _currentCaseId 為 null，無法開始追蹤');
+      return;
+    }
 
+    print('🔵 [CallCarPage] 開始追蹤訂單 - caseId: $_currentCaseId');
     _rideService.startTracking(_currentCaseId!, (result) {
-      if (result['success'] != true) return;
+      if (result['success'] != true) {
+        print('🔴 [CallCarPage] 追蹤結果失敗: $result');
+        return;
+      }
+
+      print('🔵 [CallCarPage] 追蹤更新 - case_state: ${result['case_state']}, unread_count: ${result['unread_driver_messages_count']}');
 
       setState(() {
         _caseState = result['case_state'];
 
-        // 更新司机信息
+        // 更新司機信息
         if (result['driver'] != null) {
           _driver = result['driver'] as Driver;
+          print('🔵 [CallCarPage] 更新司機信息: ${_driver!.nickName}');
         }
 
-        // 更新司机位置
+        //  更新司機位置
         if (result['driver_lat'] != null && result['driver_lng'] != null) {
           final newDriverPosition = LatLng(
             result['driver_lat'],
             result['driver_lng'],
           );
           
-          // 只在第一次获取司机位置或司机位置明显变化时才更新地图
+          // 只在第一次獲取司機位置或司機位置明顯變化時才更新地圖
           bool shouldUpdateMap = _driverPosition == null;
           
           _driverPosition = newDriverPosition;
 
-          // 如果是第一次获取司机位置，移动到中间点
+          // 如果是第一次獲取司機位置，移動到中間點
           if (shouldUpdateMap && _driver != null) {
+            print('🔵 [CallCarPage] 第一次獲取司機位置，移動地圖視角');
             _fitBoundsToShowBothPositions();
           }
         }
 
-        // 更新状态
+        // 更新未讀消息數
+        if (result['unread_driver_messages_count'] != null) {
+          final newCount = result['unread_driver_messages_count'] as int;
+          if (newCount != _unreadMessagesCount) {
+            print('🔵 [CallCarPage] 更新未讀消息數: $_unreadMessagesCount -> $newCount');
+            _unreadMessagesCount = newCount;
+          }
+        }
+
+        // 更新狀態
         _updateStateFromCaseState(_caseState, result);
       });
     });
@@ -665,10 +805,10 @@ class _CallCarPageState extends State<CallCarPage> {
   void _handleTripFinished(Map<String, dynamic> result) {
     _rideService.stopTracking();
     
-    // 获取车资
+    // 獲取車資
     final caseMoney = result['case_money'];
     
-    // 显示行程结束对话框
+    // 顯示行程結束對話框
     showDialog(
       context: context,
       barrierDismissible: false,
@@ -798,6 +938,7 @@ class _CallCarPageState extends State<CallCarPage> {
       _caseState = '';
       _driver = null;
       _driverPosition = null;
+      _unreadMessagesCount = 0;
     });
 
     // 重置地图视角

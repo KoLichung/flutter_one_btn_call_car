@@ -136,12 +136,12 @@ class FcmService {
 
     print('🔔 權限狀態: ${settings.authorizationStatus}');
     
-    // iOS: 設置前台通知選項（包含音效）
+    // iOS: 設置前台通知選項（前台時不顯示通知，只在背景時顯示）
     if (Platform.isIOS) {
       await _messaging.setForegroundNotificationPresentationOptions(
-        alert: true,
-        badge: true,
-        sound: true,
+        alert: false,  // 前台時不顯示通知
+        badge: false,  // 前台時不更新 badge
+        sound: false,  // 前台時不播放聲音
       );
     }
     
@@ -230,19 +230,21 @@ class FcmService {
   }
 
   /// 处理前台通知（App 在前台时收到）
+  /// 注意：前台時不顯示通知，只在背景時顯示
   void _handleForegroundMessage(RemoteMessage message) {
-    print('🔔 前台通知: ${message.notification?.title}');
+    print('🔔 前台通知（不顯示）: ${message.notification?.title}');
     print('📨 前台訊息內容: ${message.data}');
 
-    // 可以在这里显示应用内通知或更新 UI
-    // 例如：显示 SnackBar、Dialog 等
+    // 前台時不顯示通知，只處理數據更新 UI
+    // Android: FlutterFire 的 onMessage 默認不會自動顯示通知
+    // iOS: 已通過 setForegroundNotificationPresentationOptions 禁用前台通知
 
     if (message.notification != null) {
       print('   標題: ${message.notification!.title}');
       print('   內容: ${message.notification!.body}');
     }
 
-    // 根据消息类型处理
+    // 根据消息类型处理（更新 UI，但不顯示通知）
     _handleNotificationData(message.data);
   }
 
