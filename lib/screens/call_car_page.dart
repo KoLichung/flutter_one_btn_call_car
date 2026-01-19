@@ -402,7 +402,7 @@ class _CallCarPageState extends State<CallCarPage> {
                         });
                       },
                       icon: const Icon(
-                        Icons.chat_bubble_outline,
+                        Icons.chat,
                         color: Colors.blue,
                         size: 24,
                       ),
@@ -814,6 +814,7 @@ class _CallCarPageState extends State<CallCarPage> {
       barrierDismissible: false,
       builder: (context) => AlertDialog(
         title: const Text('行程結束'),
+        contentPadding: const EdgeInsets.fromLTRB(24, 20, 24, 0),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
@@ -846,19 +847,104 @@ class _CallCarPageState extends State<CallCarPage> {
                 ],
               ),
             ],
+            const SizedBox(height: 8),
+            // 黑名單按鈕（向右對齊）
+            Align(
+              alignment: Alignment.centerRight,
+              child: OutlinedButton.icon(
+                onPressed: () => _showBlacklistConfirmDialog(context),
+                icon: const Icon(Icons.person_add_disabled, size: 18),
+                label: const Text('黑名單'),
+                style: OutlinedButton.styleFrom(
+                  foregroundColor: Colors.black,
+                  side: const BorderSide(color: Colors.black),
+                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                ),
+              ),
+            ),
+            const SizedBox(height: 8),
+            // 確定按鈕（左右拉滿）
+            SizedBox(
+              width: double.infinity,
+              child: Padding(
+                padding: const EdgeInsets.only(bottom: 24.0),
+                child: ElevatedButton(
+                  onPressed: () {
+                    Navigator.of(context).pop();
+                    _resetState();
+                  },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.blue,
+                    foregroundColor: Colors.white,
+                    padding: const EdgeInsets.symmetric(vertical: 12),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                  ),
+                  child: const Text('確定'),
+                ),
+              ),
+            ),
           ],
         ),
+      ),
+    );
+  }
+
+  Future<void> _showBlacklistConfirmDialog(BuildContext parentContext) async {
+    final confirmed = await showDialog<bool>(
+      context: parentContext,
+      builder: (context) => AlertDialog(
+        title: const Text('確認加入黑名單'),
+        content: const Text('確定要將此司機加入黑名單嗎？'),
         actions: [
           TextButton(
-            onPressed: () {
-              Navigator.of(context).pop();
-              _resetState();
-            },
-            child: const Text('確定'),
+            onPressed: () => Navigator.of(context).pop(false),
+            child: const Text('取消'),
+          ),
+          ElevatedButton(
+            onPressed: () => Navigator.of(context).pop(true),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.red,
+              foregroundColor: Colors.white,
+            ),
+            child: const Text('確認'),
           ),
         ],
       ),
     );
+
+    if (confirmed == true && _currentCaseId != null) {
+      // 關閉行程結束對話框
+      Navigator.of(parentContext).pop();
+      
+      // 調用 API 加入黑名單
+      final result = await _rideService.blacklistDriver(_currentCaseId!);
+      
+      if (mounted) {
+        if (result['success'] == true) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(result['message'] ?? '已加入黑名單'),
+              backgroundColor: Colors.green,
+            ),
+          );
+        } else {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(result['message'] ?? '加入黑名單失敗'),
+              backgroundColor: Colors.red,
+            ),
+          );
+        }
+      }
+      
+      // 重置狀態
+      _resetState();
+    }
   }
 
   void _handleTripCanceled() {

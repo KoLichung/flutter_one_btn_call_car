@@ -46,11 +46,21 @@ class FcmService {
 
       print('✅ 通知權限已授予');
 
-      // 2. 获取设备 ID
+      // 2. iOS: 設置前台通知選項（必須在權限授予後立即設置）
+      if (Platform.isIOS) {
+        await _messaging.setForegroundNotificationPresentationOptions(
+          alert: true,   // 前台時顯示通知
+          badge: true,   // 前台時更新 badge
+          sound: true,   // 前台時播放聲音
+        );
+        print('✅ iOS 前台通知選項已設置');
+      }
+
+      // 3. 获取设备 ID
       _deviceId = await _getDeviceId();
       print('📱 設備 ID: $_deviceId');
 
-      // 3. iOS: 先獲取 APNs Token，再獲取 FCM Token
+      // 4. iOS: 先獲取 APNs Token，再獲取 FCM Token
       if (Platform.isIOS) {
         print('🍎 iOS 平台：等待 APNs Token...');
         try {
@@ -73,7 +83,7 @@ class FcmService {
         }
       }
 
-      // 4. 获取 FCM Token
+      // 5. 获取 FCM Token
       print('🔑 嘗試獲取 FCM Token...');
       try {
         _fcmToken = await _messaging.getToken();
@@ -87,12 +97,12 @@ class FcmService {
         _fcmToken = null;
       }
 
-      // 5. 如果 Token 為 null，設置監聽器等待
+      // 6. 如果 Token 為 null，設置監聽器等待
       if (_fcmToken == null) {
         print('⚠️ FCM Token 暫時無法獲取，設置監聽器等待...');
       }
 
-      // 6. 监听 Token 刷新（包括首次獲取）
+      // 7. 监听 Token 刷新（包括首次獲取）
       _messaging.onTokenRefresh.listen((newToken) {
         print('🔄 FCM Token 更新/首次獲取: ${newToken.substring(0, 50)}...');
         _fcmToken = newToken;
@@ -100,13 +110,13 @@ class FcmService {
         registerToServer();
       });
 
-      // 7. 设置前台通知处理
+      // 8. 设置前台通知处理
       FirebaseMessaging.onMessage.listen(_handleForegroundMessage);
 
-      // 8. 设置后台消息处理（App 在后台但未关闭）
+      // 9. 设置后台消息处理（App 在后台但未关闭）
       FirebaseMessaging.onMessageOpenedApp.listen(_handleMessageOpenedApp);
 
-      // 9. 检查是否从通知启动 App
+      // 10. 检查是否从通知启动 App
       final initialMessage = await _messaging.getInitialMessage();
       if (initialMessage != null) {
         print('📬 從通知啟動 App');
@@ -136,14 +146,7 @@ class FcmService {
 
     print('🔔 權限狀態: ${settings.authorizationStatus}');
     
-    // iOS: 設置前台通知選項（前台時不顯示通知，只在背景時顯示）
-    if (Platform.isIOS) {
-      await _messaging.setForegroundNotificationPresentationOptions(
-        alert: false,  // 前台時不顯示通知
-        badge: false,  // 前台時不更新 badge
-        sound: false,  // 前台時不播放聲音
-      );
-    }
+    // 注意：iOS 前台通知選項已在 initialize() 中設置，這裡不需要重複設置
     
     return settings;
   }
@@ -230,21 +233,20 @@ class FcmService {
   }
 
   /// 处理前台通知（App 在前台时收到）
-  /// 注意：前台時不顯示通知，只在背景時顯示
   void _handleForegroundMessage(RemoteMessage message) {
-    print('🔔 前台通知（不顯示）: ${message.notification?.title}');
+    print('🔔 前台通知: ${message.notification?.title}');
     print('📨 前台訊息內容: ${message.data}');
 
-    // 前台時不顯示通知，只處理數據更新 UI
-    // Android: FlutterFire 的 onMessage 默認不會自動顯示通知
-    // iOS: 已通過 setForegroundNotificationPresentationOptions 禁用前台通知
+    // 前台時也會顯示通知
+    // Android: FlutterFire 的 onMessage 會自動顯示通知
+    // iOS: 已通過 setForegroundNotificationPresentationOptions 啟用前台通知
 
     if (message.notification != null) {
       print('   標題: ${message.notification!.title}');
       print('   內容: ${message.notification!.body}');
     }
 
-    // 根据消息类型处理（更新 UI，但不顯示通知）
+    // 根据消息类型处理
     _handleNotificationData(message.data);
   }
 

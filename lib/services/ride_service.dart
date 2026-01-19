@@ -246,6 +246,50 @@ class RideService {
     }
   }
 
+  // 將司機加入黑名單
+  Future<Map<String, dynamic>> blacklistDriver(int caseId) async {
+    try {
+      final response = await _api.post('blacklist_driver/', data: {
+        'case_id': caseId,
+      });
+
+      if (response.data['status'] == 'success') {
+        return {
+          'success': true,
+          'message': response.data['message'] ?? '已加入黑名單',
+        };
+      }
+
+      return {
+        'success': false,
+        'message': response.data['message'] ?? '加入黑名單失敗',
+      };
+    } on DioException catch (e) {
+      print('加入黑名單錯誤: $e');
+      
+      if (e.response?.data != null && e.response?.data is Map) {
+        final data = e.response!.data as Map<String, dynamic>;
+        return {
+          'success': false,
+          'message': data['message'] ?? '加入黑名單失敗',
+        };
+      }
+      
+      return {
+        'success': false,
+        'message': '加入黑名單失敗，請檢查網絡連接',
+        'error': e.toString(),
+      };
+    } catch (e) {
+      print('加入黑名單錯誤: $e');
+      return {
+        'success': false,
+        'message': '加入黑名單失敗',
+        'error': e.toString(),
+      };
+    }
+  }
+
   // 清理資源
   void dispose() {
     stopTracking();

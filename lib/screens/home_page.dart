@@ -33,7 +33,7 @@ class _HomePageState extends State<HomePage> {
         items: const [
           BottomNavigationBarItem(
             icon: Icon(Icons.local_taxi),
-            label: '叫車',
+            label: '叫車主頁',
           ),
           BottomNavigationBarItem(
             icon: Icon(Icons.person),
