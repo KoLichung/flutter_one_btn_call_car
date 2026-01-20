@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:geolocator/geolocator.dart';
+import '../l10n/app_localizations.dart';
 import '../services/ride_service.dart';
 import '../services/storage_service.dart';
 import '../models/driver.dart';
@@ -33,7 +34,7 @@ class _CallCarPageState extends State<CallCarPage> {
   CallCarState _state = CallCarState.idle;
   LatLng _currentPosition = const LatLng(25.0330, 121.5654); // Default Taipei
   LatLng? _driverPosition;
-  String _currentAddress = '獲取位置中...';
+  String _currentAddress = '';
   
   // 訂單信息
   int? _currentCaseId;
@@ -91,9 +92,11 @@ class _CallCarPageState extends State<CallCarPage> {
       }
     } catch (e) {
       print('Error getting location: $e');
-      setState(() {
-        _currentAddress = '獲取位置失敗';
-      });
+      if (mounted) {
+        setState(() {
+          _currentAddress = AppLocalizations.of(context)!.locationFailed;
+        });
+      }
     }
   }
 
@@ -248,8 +251,8 @@ class _CallCarPageState extends State<CallCarPage> {
           position: _driverPosition!,
           icon: _carIcon!,
           infoWindow: InfoWindow(
-            title: '司機位置', 
-            snippet: _driver!.nickName,
+            title: _driver!.nickName, 
+            snippet: '',
           ),
           anchor: const Offset(0.5, 0.5),
         ),
@@ -313,14 +316,14 @@ class _CallCarPageState extends State<CallCarPage> {
                       color: Colors.green.shade100,
                       borderRadius: BorderRadius.circular(20),
                     ),
-                    child: const Row(
+                    child: Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        Icon(Icons.directions_car, size: 16, color: Colors.green),
-                        SizedBox(width: 4),
+                        const Icon(Icons.directions_car, size: 16, color: Colors.green),
+                        const SizedBox(width: 4),
                         Text(
-                          '前往中',
-                          style: TextStyle(
+                          AppLocalizations.of(context)!.driverOnWay,
+                          style: const TextStyle(
                             color: Colors.green,
                             fontWeight: FontWeight.bold,
                           ),
@@ -338,9 +341,9 @@ class _CallCarPageState extends State<CallCarPage> {
                       color: Colors.orange.shade100,
                       borderRadius: BorderRadius.circular(20),
                     ),
-                    child: const Text(
-                      '等待接客',
-                      style: TextStyle(
+                    child: Text(
+                      AppLocalizations.of(context)!.driverArrived,
+                      style: const TextStyle(
                         color: Colors.orange,
                         fontWeight: FontWeight.bold,
                       ),
@@ -356,9 +359,9 @@ class _CallCarPageState extends State<CallCarPage> {
                       color: Colors.blue.shade100,
                       borderRadius: BorderRadius.circular(20),
                     ),
-                    child: const Text(
-                      '旅程中',
-                      style: TextStyle(
+                    child: Text(
+                      AppLocalizations.of(context)!.onBoard,
+                      style: const TextStyle(
                         color: Colors.blue,
                         fontWeight: FontWeight.bold,
                       ),
@@ -478,7 +481,7 @@ class _CallCarPageState extends State<CallCarPage> {
                     const SizedBox(width: 8),
                     Expanded(
                       child: Text(
-                        _currentAddress,
+                        _currentAddress.isEmpty ? AppLocalizations.of(context)!.gettingLocation : _currentAddress,
                         style: const TextStyle(fontSize: 14),
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
@@ -538,9 +541,9 @@ class _CallCarPageState extends State<CallCarPage> {
                   valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
                 ),
               )
-            : const Text(
-                '一鍵叫車',
-                style: TextStyle(
+            : Text(
+                AppLocalizations.of(context)!.oneClickCallCar,
+                style: const TextStyle(
                   fontSize: 18,
                   fontWeight: FontWeight.bold,
                 ),
@@ -555,7 +558,7 @@ class _CallCarPageState extends State<CallCarPage> {
         const CircularProgressIndicator(),
         const SizedBox(height: 16),
         Text(
-          message,
+          AppLocalizations.of(context)!.calling,
           style: const TextStyle(
             fontSize: 16,
             color: Colors.grey,
@@ -575,7 +578,7 @@ class _CallCarPageState extends State<CallCarPage> {
         ),
         const SizedBox(height: 16),
         Text(
-          '正在尋找司機...',
+          AppLocalizations.of(context)!.findingDriver,
           style: const TextStyle(
             fontSize: 18,
             fontWeight: FontWeight.bold,
@@ -585,7 +588,7 @@ class _CallCarPageState extends State<CallCarPage> {
         if (_caseNumber != null) ...[
           const SizedBox(height: 8),
           Text(
-            '訂單號: $_caseNumber',
+            '${AppLocalizations.of(context)!.orderNumber} $_caseNumber',
             style: TextStyle(
               fontSize: 12,
               color: Colors.grey.shade600,
@@ -601,7 +604,7 @@ class _CallCarPageState extends State<CallCarPage> {
               foregroundColor: Colors.red,
               side: const BorderSide(color: Colors.red),
             ),
-            child: const Text('取消叫車'),
+            child: Text(AppLocalizations.of(context)!.cancelCallCar),
           ),
         ),
       ],
@@ -609,17 +612,17 @@ class _CallCarPageState extends State<CallCarPage> {
   }
 
   Widget _buildDriverOnWayState() {
-    return const Column(
+    return Column(
       children: [
-        Icon(
+        const Icon(
           Icons.directions_car,
           size: 48,
           color: Colors.blue,
         ),
-        SizedBox(height: 16),
+        const SizedBox(height: 16),
         Text(
-          '司機正前往您的位置，請耐心等待',
-          style: TextStyle(
+          AppLocalizations.of(context)!.driverOnWayMessage,
+          style: const TextStyle(
             fontSize: 18,
             fontWeight: FontWeight.bold,
             color: Colors.blue,
@@ -631,17 +634,17 @@ class _CallCarPageState extends State<CallCarPage> {
   }
 
   Widget _buildArrivedState() {
-    return const Column(
+    return Column(
       children: [
-        Icon(
+        const Icon(
           Icons.notifications_active,
           size: 48,
           color: Colors.green,
         ),
-        SizedBox(height: 16),
+        const SizedBox(height: 16),
         Text(
-          '司機已到達，請儘快上車',
-          style: TextStyle(
+          AppLocalizations.of(context)!.driverArrivedMessage,
+          style: const TextStyle(
             fontSize: 18,
             fontWeight: FontWeight.bold,
             color: Colors.green,
@@ -653,17 +656,17 @@ class _CallCarPageState extends State<CallCarPage> {
   }
 
   Widget _buildOnBoardState() {
-    return const Column(
+    return Column(
       children: [
-        Icon(
+        const Icon(
           Icons.navigation,
           size: 48,
           color: Colors.green,
         ),
-        SizedBox(height: 16),
+        const SizedBox(height: 16),
         Text(
-          '行程進行中，祝您旅途愉快',
-          style: TextStyle(
+          AppLocalizations.of(context)!.onBoardMessage,
+          style: const TextStyle(
             fontSize: 18,
             fontWeight: FontWeight.bold,
             color: Colors.green,
@@ -711,7 +714,7 @@ class _CallCarPageState extends State<CallCarPage> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text(result['message'] ?? '叫車失敗'),
+            content: Text(result['message'] ?? AppLocalizations.of(context)!.callCarFailed),
             backgroundColor: Colors.red,
           ),
         );
@@ -813,16 +816,16 @@ class _CallCarPageState extends State<CallCarPage> {
       context: context,
       barrierDismissible: false,
       builder: (context) => AlertDialog(
-        title: const Text('行程結束'),
+        title: Text(AppLocalizations.of(context)!.tripFinished),
         contentPadding: const EdgeInsets.fromLTRB(24, 20, 24, 0),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
             const Icon(Icons.check_circle, color: Colors.green, size: 64),
             const SizedBox(height: 16),
-            const Text(
-              '感謝您的使用',
-              style: TextStyle(fontSize: 18),
+            Text(
+              AppLocalizations.of(context)!.thankYou,
+              style: const TextStyle(fontSize: 18),
               textAlign: TextAlign.center,
             ),
             if (caseMoney != null) ...[
@@ -832,9 +835,9 @@ class _CallCarPageState extends State<CallCarPage> {
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  const Text(
-                    '本次車資：',
-                    style: TextStyle(fontSize: 16),
+                  Text(
+                    AppLocalizations.of(context)!.fare,
+                    style: const TextStyle(fontSize: 16),
                   ),
                   Text(
                     'NT\$ ${caseMoney.toStringAsFixed(0)}',
@@ -854,7 +857,7 @@ class _CallCarPageState extends State<CallCarPage> {
               child: OutlinedButton.icon(
                 onPressed: () => _showBlacklistConfirmDialog(context),
                 icon: const Icon(Icons.person_add_disabled, size: 18),
-                label: const Text('黑名單'),
+                label: Text(AppLocalizations.of(context)!.blacklist),
                 style: OutlinedButton.styleFrom(
                   foregroundColor: Colors.black,
                   side: const BorderSide(color: Colors.black),
@@ -884,7 +887,7 @@ class _CallCarPageState extends State<CallCarPage> {
                       borderRadius: BorderRadius.circular(8),
                     ),
                   ),
-                  child: const Text('確定'),
+                  child: Text(AppLocalizations.of(context)!.confirm),
                 ),
               ),
             ),
@@ -898,12 +901,12 @@ class _CallCarPageState extends State<CallCarPage> {
     final confirmed = await showDialog<bool>(
       context: parentContext,
       builder: (context) => AlertDialog(
-        title: const Text('確認加入黑名單'),
-        content: const Text('確定要將此司機加入黑名單嗎？'),
+        title: Text(AppLocalizations.of(context)!.confirmBlacklist),
+        content: Text(AppLocalizations.of(context)!.confirmBlacklistMessage),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(context).pop(false),
-            child: const Text('取消'),
+            child: Text(AppLocalizations.of(context)!.cancel),
           ),
           ElevatedButton(
             onPressed: () => Navigator.of(context).pop(true),
@@ -911,7 +914,7 @@ class _CallCarPageState extends State<CallCarPage> {
               backgroundColor: Colors.red,
               foregroundColor: Colors.white,
             ),
-            child: const Text('確認'),
+            child: Text(AppLocalizations.of(context)!.confirm),
           ),
         ],
       ),
@@ -928,14 +931,14 @@ class _CallCarPageState extends State<CallCarPage> {
         if (result['success'] == true) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-              content: Text(result['message'] ?? '已加入黑名單'),
+              content: Text(result['message'] ?? AppLocalizations.of(context)!.blacklistSuccess),
               backgroundColor: Colors.green,
             ),
           );
         } else {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-              content: Text(result['message'] ?? '加入黑名單失敗'),
+              content: Text(result['message'] ?? AppLocalizations.of(context)!.blacklistFailed),
               backgroundColor: Colors.red,
             ),
           );
@@ -952,8 +955,8 @@ class _CallCarPageState extends State<CallCarPage> {
     
     if (mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('訂單已取消(可能暫時附近無司機)'),
+        SnackBar(
+          content: Text(AppLocalizations.of(context)!.orderCanceled),
           backgroundColor: Colors.red,
         ),
       );
@@ -968,12 +971,12 @@ class _CallCarPageState extends State<CallCarPage> {
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('確認取消'),
-        content: const Text('確認要取消叫車嗎？'),
+        title: Text(AppLocalizations.of(context)!.confirmCancel),
+        content: Text(AppLocalizations.of(context)!.confirmCancelMessage),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(context).pop(false),
-            child: const Text('我再想想'),
+            child: Text(AppLocalizations.of(context)!.thinkAgain),
           ),
           ElevatedButton(
             onPressed: () => Navigator.of(context).pop(true),
@@ -981,7 +984,7 @@ class _CallCarPageState extends State<CallCarPage> {
               backgroundColor: Colors.red,
               foregroundColor: Colors.white,
             ),
-            child: const Text('確認取消'),
+            child: Text(AppLocalizations.of(context)!.confirmCancelButton),
           ),
         ],
       ),
@@ -997,7 +1000,7 @@ class _CallCarPageState extends State<CallCarPage> {
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-              content: Text(result['message'] ?? '訂單已成功取消'),
+              content: Text(result['message'] ?? AppLocalizations.of(context)!.orderCancelSuccess),
               backgroundColor: Colors.green,
             ),
           );
@@ -1007,7 +1010,7 @@ class _CallCarPageState extends State<CallCarPage> {
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-              content: Text(result['message'] ?? '取消訂單失敗'),
+              content: Text(result['message'] ?? AppLocalizations.of(context)!.orderCancelFailed),
               backgroundColor: Colors.red,
             ),
           );

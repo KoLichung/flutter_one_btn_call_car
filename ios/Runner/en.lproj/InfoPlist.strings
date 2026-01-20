@@ -1,0 +1,5 @@
+CFBundleDisplayName = "Easy Ride";
+CFBundleName = "Easy Ride";
+NSLocationAlwaysAndWhenInUseUsageDescription = "Location permission is required to provide ride services";
+NSLocationAlwaysUsageDescription = "Location permission is required to provide ride services";
+NSLocationWhenInUseUsageDescription = "Location permission is required to provide ride services";

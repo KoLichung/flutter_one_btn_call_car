@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../l10n/app_localizations.dart';
 import '../models/customer.dart';
 import '../services/auth_service.dart';
 import 'ride_history_page.dart';
@@ -41,7 +42,7 @@ class _ProfilePageState extends State<ProfilePage> {
     if (_isLoading) {
       return Scaffold(
         appBar: AppBar(
-          title: const Text('個人資料'),
+          title: Text(AppLocalizations.of(context)!.profileTitle),
           centerTitle: true,
           elevation: 0,
           backgroundColor: Colors.blue,
@@ -56,7 +57,7 @@ class _ProfilePageState extends State<ProfilePage> {
     if (_currentCustomer == null) {
       return Scaffold(
         appBar: AppBar(
-          title: const Text('個人資料'),
+          title: Text(AppLocalizations.of(context)!.profileTitle),
           centerTitle: true,
           elevation: 0,
           backgroundColor: Colors.blue,
@@ -66,11 +67,11 @@ class _ProfilePageState extends State<ProfilePage> {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              const Text('無法加載用戶資料'),
+              Text(AppLocalizations.of(context)!.loadUserFailed),
               const SizedBox(height: 16),
               ElevatedButton(
                 onPressed: _loadCustomerData,
-                child: const Text('重試'),
+                child: Text(AppLocalizations.of(context)!.retry),
               ),
             ],
           ),
@@ -80,7 +81,7 @@ class _ProfilePageState extends State<ProfilePage> {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('個人資料'),
+        title: Text(AppLocalizations.of(context)!.profileTitle),
         centerTitle: true,
         elevation: 0,
         backgroundColor: Colors.blue,
@@ -153,8 +154,8 @@ class _ProfilePageState extends State<ProfilePage> {
                   // Menu Items
                   _buildMenuCard(
                     icon: Icons.history,
-                    title: '叫車紀錄',
-                    subtitle: '查看您的搭乘紀錄',
+                    title: AppLocalizations.of(context)!.rideHistory,
+                    subtitle: AppLocalizations.of(context)!.rideHistorySubtitle,
                     onTap: () {
                       Navigator.of(context).push(
                         MaterialPageRoute(
@@ -172,7 +173,7 @@ class _ProfilePageState extends State<ProfilePage> {
                     child: OutlinedButton.icon(
                       onPressed: _handleLogout,
                       icon: const Icon(Icons.logout),
-                      label: const Text('登出'),
+                      label: Text(AppLocalizations.of(context)!.logout),
                       style: OutlinedButton.styleFrom(
                         foregroundColor: Colors.red,
                         side: const BorderSide(color: Colors.red),
@@ -200,22 +201,22 @@ class _ProfilePageState extends State<ProfilePage> {
     switch (_currentCustomer!.loginMethod) {
       case 'phone':
         icon = Icons.phone_android;
-        subtitle = '手機登入 (${_currentCustomer!.phone ?? ''})';
+        subtitle = AppLocalizations.of(context)!.phoneLoginMethod(_currentCustomer!.phone ?? '');
         color = Colors.blue;
         break;
       case 'line':
         icon = Icons.chat_bubble;
-        subtitle = 'LINE 登入';
+        subtitle = AppLocalizations.of(context)!.lineLoginMethod;
         color = const Color(0xFF00B900);
         break;
       case 'apple':
         icon = Icons.apple;
-        subtitle = 'Apple 登入';
+        subtitle = AppLocalizations.of(context)!.appleLoginMethod;
         color = Colors.black;
         break;
       default:
         icon = Icons.person;
-        subtitle = '未知登入方式';
+        subtitle = AppLocalizations.of(context)!.unknown;
         color = Colors.grey;
     }
 
@@ -250,7 +251,7 @@ class _ProfilePageState extends State<ProfilePage> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      '登入方式',
+                      AppLocalizations.of(context)!.loginMethod,
                       style: TextStyle(
                         fontSize: 12,
                         color: Colors.grey.shade600,
@@ -420,12 +421,12 @@ class _ProfilePageState extends State<ProfilePage> {
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('確認登出'),
-        content: const Text('確定要登出嗎？'),
+        title: Text(AppLocalizations.of(context)!.confirmLogout),
+        content: Text(AppLocalizations.of(context)!.confirmLogoutMessage),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(context).pop(false),
-            child: const Text('取消'),
+            child: Text(AppLocalizations.of(context)!.cancel),
           ),
           ElevatedButton(
             onPressed: () => Navigator.of(context).pop(true),
@@ -433,7 +434,7 @@ class _ProfilePageState extends State<ProfilePage> {
               backgroundColor: Colors.red,
               foregroundColor: Colors.white,
             ),
-            child: const Text('登出'),
+            child: Text(AppLocalizations.of(context)!.logout),
           ),
         ],
       ),

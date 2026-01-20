@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'firebase_options.dart';
+import 'l10n/app_localizations.dart';
 import 'screens/login_page.dart';
 import 'screens/home_page.dart';
 import 'services/auth_service.dart';
@@ -43,8 +45,74 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: '一鍵叫車',
+      onGenerateTitle: (context) => AppLocalizations.of(context)!.appName,
       debugShowCheckedModeBanner: false,
+      localizationsDelegates: const [
+        AppLocalizations.delegate,
+        GlobalMaterialLocalizations.delegate,
+        GlobalWidgetsLocalizations.delegate,
+        GlobalCupertinoLocalizations.delegate,
+      ],
+      supportedLocales: const [
+        Locale('en'), // English
+        Locale('zh'), // Chinese (Traditional)
+        Locale('zh', 'Hans'), // Chinese (Simplified)
+      ],
+      localeResolutionCallback: (locale, supportedLocales) {
+        print('🌍 [Locale] 設備語言: $locale');
+        print('🌍 [Locale] 語言代碼: ${locale?.languageCode}');
+        print('🌍 [Locale] 國家代碼: ${locale?.countryCode}');
+        print('🌍 [Locale] Script 代碼: ${locale?.scriptCode}');
+        print('🌍 [Locale] 支持的語言: $supportedLocales');
+        
+        if (locale == null) {
+          print('🌍 [Locale] 設備語言為 null，使用英文');
+          return const Locale('en');
+        }
+        
+        // 如果是英文，直接返回英文
+        if (locale.languageCode == 'en') {
+          print('🌍 [Locale] ✅ 選擇英文');
+          return const Locale('en');
+        }
+        
+        // 如果是中文，根據 script 或 country code 選擇簡體或繁體
+        if (locale.languageCode == 'zh') {
+          print('🌍 [Locale] 檢測到中文');
+          
+          // 檢查 script code
+          if (locale.scriptCode != null) {
+            print('🌍 [Locale] Script 代碼: ${locale.scriptCode}');
+            if (locale.scriptCode == 'Hans') {
+              print('🌍 [Locale] ✅ 選擇簡體中文（Hans script）');
+              return const Locale('zh', 'Hans');
+            } else if (locale.scriptCode == 'Hant') {
+              print('🌍 [Locale] ✅ 選擇繁體中文（Hant script）');
+              return const Locale('zh');
+            }
+          }
+          
+          // 檢查 country code
+          if (locale.countryCode != null) {
+            print('🌍 [Locale] 國家代碼: ${locale.countryCode}');
+            if (locale.countryCode == 'CN' || locale.countryCode == 'SG') {
+              print('🌍 [Locale] ✅ 選擇簡體中文（CN/SG）');
+              return const Locale('zh', 'Hans');
+            } else {
+              print('🌍 [Locale] ✅ 選擇繁體中文（TW/HK/MO等）');
+              return const Locale('zh');
+            }
+          }
+          
+          // 默認繁體中文
+          print('🌍 [Locale] ✅ 選擇繁體中文（默認）');
+          return const Locale('zh');
+        }
+        
+        // 其他語言，使用英文
+        print('🌍 [Locale] ✅ 不支持的語言 ${locale.languageCode}，使用英文');
+        return const Locale('en');
+      },
       theme: ThemeData(
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.blue),
         useMaterial3: true,
@@ -131,16 +199,16 @@ class _SplashScreenState extends State<SplashScreen> {
                   color: Colors.blue,
                 ),
               ),
-              const SizedBox(height: 30),
-              const Text(
-                '一鍵叫車',
-                style: TextStyle(
-                  fontSize: 36,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.white,
-                ),
-              ),
-              const SizedBox(height: 30),
+                  const SizedBox(height: 30),
+                  Text(
+                    AppLocalizations.of(context)!.appName,
+                    style: const TextStyle(
+                      fontSize: 36,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.white,
+                    ),
+                  ),
+                  const SizedBox(height: 30),
               const CircularProgressIndicator(
                 valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
               ),

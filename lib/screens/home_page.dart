@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../l10n/app_localizations.dart';
 import 'call_car_page.dart';
 import 'profile_page.dart';
 
@@ -30,14 +31,14 @@ class _HomePageState extends State<HomePage> {
         },
         selectedItemColor: Colors.blue,
         unselectedItemColor: Colors.grey,
-        items: const [
+        items: [
           BottomNavigationBarItem(
-            icon: Icon(Icons.local_taxi),
-            label: '叫車主頁',
+            icon: const Icon(Icons.local_taxi),
+            label: AppLocalizations.of(context)!.callCarPage,
           ),
           BottomNavigationBarItem(
-            icon: Icon(Icons.person),
-            label: '個人資料',
+            icon: const Icon(Icons.person),
+            label: AppLocalizations.of(context)!.profile,
           ),
         ],
       ),

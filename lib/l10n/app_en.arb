@@ -1,0 +1,133 @@
+{
+  "@@locale": "en",
+  "appName": "Easy Ride",
+  "@appName": {
+    "description": "The application name"
+  },
+  "appSlogan": "Fast, Convenient, Safe",
+  
+  "loginTitle": "Sign In",
+  "phone": "Phone",
+  "phoneHint": "Enter phone number",
+  "phoneError": "Please enter phone number",
+  "phoneInvalid": "Please enter valid phone number",
+  "password": "Password",
+  "passwordHint": "Enter password",
+  "passwordError": "Please enter password",
+  "passwordLength": "Password must be at least 6 characters",
+  "phoneLogin": "Phone Login",
+  "lineLogin": "LINE Login",
+  "appleLogin": "Apple Login",
+  "or": "OR",
+  "phoneRegister": "Phone Registration",
+  "loginFailed": "Login failed",
+  "lineLoginFailed": "LINE login failed",
+  "appleLoginFailed": "Apple login failed",
+  
+  "registerTitle": "Register",
+  "registerSlogan": "Join Easy Ride",
+  "nickname": "Nickname",
+  "nicknameHint": "Enter nickname",
+  "nicknameError": "Please enter nickname",
+  "confirmRegister": "Confirm Registration",
+  "registerFailed": "Registration failed",
+  "backToLogin": "Already have an account? Back to login",
+  
+  "callCarPage": "Call Car",
+  "profile": "Profile",
+  
+  "gettingLocation": "Getting location...",
+  "locationFailed": "Failed to get location",
+  "oneClickCallCar": "One-Click Call",
+  "calling": "Calling...",
+  "findingDriver": "Finding driver...",
+  "orderNumber": "Order No:",
+  "cancelCallCar": "Cancel",
+  "driverOnWay": "Driver on the way",
+  "driverOnWayMessage": "Driver is on the way, please wait",
+  "driverArrived": "Waiting for pickup",
+  "driverArrivedMessage": "Driver has arrived, please board as soon as possible",
+  "onBoard": "In progress",
+  "onBoardMessage": "Enjoy your ride",
+  "driverLocation": "Driver Location",
+  "callCarFailed": "Failed to call car",
+  
+  "tripFinished": "Trip Completed",
+  "thankYou": "Thank you for using our service",
+  "fare": "Fare:",
+  "blacklist": "Blacklist",
+  "confirm": "Confirm",
+  "confirmCancel": "Confirm Cancel",
+  "confirmCancelMessage": "Are you sure you want to cancel?",
+  "thinkAgain": "Think again",
+  "confirmCancelButton": "Confirm Cancel",
+  "orderCanceled": "Order cancelled (no nearby drivers available)",
+  "orderCancelSuccess": "Order cancelled successfully",
+  "orderCancelFailed": "Failed to cancel order",
+  "confirmBlacklist": "Confirm Blacklist",
+  "confirmBlacklistMessage": "Are you sure you want to blacklist this driver?",
+  "cancel": "Cancel",
+  "blacklistSuccess": "Added to blacklist",
+  "blacklistFailed": "Failed to add to blacklist",
+  
+  "profileTitle": "Profile",
+  "loginMethod": "Login Method",
+  "phoneLoginMethod": "Phone Login ({phone})",
+  "@phoneLoginMethod": {
+    "placeholders": {
+      "phone": {
+        "type": "String"
+      }
+    }
+  },
+  "lineLoginMethod": "LINE Login",
+  "appleLoginMethod": "Apple Login",
+  "unknown": "Unknown",
+  "rideHistory": "Ride History",
+  "rideHistorySubtitle": "View your ride history",
+  "logout": "Logout",
+  "confirmLogout": "Confirm Logout",
+  "confirmLogoutMessage": "Are you sure you want to logout?",
+  "loading": "Loading...",
+  "loadUserFailed": "Failed to load user data",
+  "retry": "Retry",
+  
+  "accountDetails": "Account Details",
+  "dangerZone": "Danger Zone",
+  "deleteAccount": "Delete Account",
+  "deleteAccountSubtitle": "Permanently delete your account and all data",
+  "deleteAccountTitle": "Delete Account",
+  "deleteAccountConfirm": "Are you sure you want to delete your account?",
+  "deleteAccountWarning": "⚠️ Cannot be recovered after deletion",
+  "deleteAccountInfo1": "• Your personal data will be permanently deleted",
+  "deleteAccountInfo2": "• Historical orders will be retained but no longer linked to your account",
+  "deleteAccountInfo3": "• This action cannot be undone",
+  "confirmDelete": "Confirm Delete",
+  "lastConfirm": "Final Confirmation",
+  "lastConfirmMessage": "This action cannot be undone!\n\nAre you sure you want to permanently delete your account?",
+  "confirmDeleteForever": "Confirm, Delete Forever",
+  "accountDeleted": "Account deleted successfully",
+  "accountDeleteFailed": "Failed to delete account",
+  
+  "rideHistoryTitle": "Ride History",
+  "noRideHistory": "No ride history",
+  "today": "Today",
+  "yesterday": "Yesterday",
+  "daysAgo": "{days} days ago",
+  "@daysAgo": {
+    "placeholders": {
+      "days": {
+        "type": "int"
+      }
+    }
+  },
+  
+  "chatTitle": "Chat",
+  "startConversation": "Start conversation",
+  "messageHint": "Type a message...",
+  "messageMissing": "Missing order ID",
+  "pleaseLogin": "Please login first",
+  "chatInitFailed": "Failed to initialize chat",
+  "loadMessagesFailed": "Failed to load messages",
+  "sendFailed": "Failed to send"
+}

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../l10n/app_localizations.dart';
 import '../models/ride_record.dart';
 import '../services/ride_service.dart';
 import 'ride_detail_page.dart';
@@ -44,7 +45,7 @@ class _RideHistoryPageState extends State<RideHistoryPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('叫車紀錄'),
+        title: Text(AppLocalizations.of(context)!.rideHistoryTitle),
         centerTitle: true,
         elevation: 0,
         backgroundColor: Colors.blue,
@@ -77,7 +78,7 @@ class _RideHistoryPageState extends State<RideHistoryPage> {
                             const SizedBox(height: 16),
                             ElevatedButton(
                               onPressed: _loadHistory,
-                              child: const Text('重試'),
+                              child: Text(AppLocalizations.of(context)!.retry),
                             ),
                           ],
                         ),
@@ -94,7 +95,7 @@ class _RideHistoryPageState extends State<RideHistoryPage> {
                                 ),
                                 const SizedBox(height: 16),
                                 Text(
-                                  '尚無叫車紀錄',
+                                  AppLocalizations.of(context)!.noRideHistory,
                                   style: TextStyle(
                                     fontSize: 18,
                                     color: Colors.grey.shade500,
@@ -214,11 +215,11 @@ class _RideHistoryPageState extends State<RideHistoryPage> {
     final difference = now.difference(date);
     
     if (difference.inDays == 0) {
-      return '今天 ${date.hour.toString().padLeft(2, '0')}:${date.minute.toString().padLeft(2, '0')}';
+      return '${AppLocalizations.of(context)!.today} ${date.hour.toString().padLeft(2, '0')}:${date.minute.toString().padLeft(2, '0')}';
     } else if (difference.inDays == 1) {
-      return '昨天 ${date.hour.toString().padLeft(2, '0')}:${date.minute.toString().padLeft(2, '0')}';
+      return '${AppLocalizations.of(context)!.yesterday} ${date.hour.toString().padLeft(2, '0')}:${date.minute.toString().padLeft(2, '0')}';
     } else if (difference.inDays < 7) {
-      return '${difference.inDays} 天前';
+      return AppLocalizations.of(context)!.daysAgo(difference.inDays);
     } else {
       return '${date.year}/${date.month}/${date.day}';
     }

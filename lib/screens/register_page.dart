@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../l10n/app_localizations.dart';
 import 'home_page.dart';
 import '../services/auth_service.dart';
 
@@ -51,7 +52,7 @@ class _RegisterPageState extends State<RegisterPage> {
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-              content: Text(result['message'] ?? '注册失敗'),
+              content: Text(result['message'] ?? AppLocalizations.of(context)!.registerFailed),
               backgroundColor: Colors.red,
             ),
           );
@@ -105,18 +106,18 @@ class _RegisterPageState extends State<RegisterPage> {
                   const SizedBox(height: 30),
                   
                   // Title
-                  const Text(
-                    '註冊帳號',
-                    style: TextStyle(
+                  Text(
+                    AppLocalizations.of(context)!.registerTitle,
+                    style: const TextStyle(
                       fontSize: 36,
                       fontWeight: FontWeight.bold,
                       color: Colors.white,
                     ),
                   ),
                   const SizedBox(height: 10),
-                  const Text(
-                    '加入一鍵叫車',
-                    style: TextStyle(
+                  Text(
+                    AppLocalizations.of(context)!.registerSlogan,
+                    style: const TextStyle(
                       fontSize: 16,
                       color: Colors.white70,
                     ),
@@ -141,8 +142,8 @@ class _RegisterPageState extends State<RegisterPage> {
                               controller: _phoneController,
                               keyboardType: TextInputType.phone,
                               decoration: InputDecoration(
-                                labelText: '手機',
-                                hintText: '請輸入手機號碼',
+                                labelText: AppLocalizations.of(context)!.phone,
+                                hintText: AppLocalizations.of(context)!.phoneHint,
                                 prefixIcon: const Icon(Icons.phone),
                                 border: OutlineInputBorder(
                                   borderRadius: BorderRadius.circular(12),
@@ -152,10 +153,10 @@ class _RegisterPageState extends State<RegisterPage> {
                               ),
                               validator: (value) {
                                 if (value == null || value.isEmpty) {
-                                  return '請輸入手機號碼';
+                                  return AppLocalizations.of(context)!.phoneError;
                                 }
                                 if (value.length < 10) {
-                                  return '請輸入有效的手機號碼';
+                                  return AppLocalizations.of(context)!.phoneInvalid;
                                 }
                                 return null;
                               },
@@ -166,8 +167,8 @@ class _RegisterPageState extends State<RegisterPage> {
                             TextFormField(
                               controller: _nicknameController,
                               decoration: InputDecoration(
-                                labelText: '暱稱',
-                                hintText: '請輸入暱稱',
+                                labelText: AppLocalizations.of(context)!.nickname,
+                                hintText: AppLocalizations.of(context)!.nicknameHint,
                                 prefixIcon: const Icon(Icons.person),
                                 border: OutlineInputBorder(
                                   borderRadius: BorderRadius.circular(12),
@@ -177,7 +178,7 @@ class _RegisterPageState extends State<RegisterPage> {
                               ),
                               validator: (value) {
                                 if (value == null || value.isEmpty) {
-                                  return '請輸入暱稱';
+                                  return AppLocalizations.of(context)!.nicknameError;
                                 }
                                 return null;
                               },
@@ -189,8 +190,8 @@ class _RegisterPageState extends State<RegisterPage> {
                               controller: _passwordController,
                               obscureText: true,
                               decoration: InputDecoration(
-                                labelText: '密碼',
-                                hintText: '請輸入密碼',
+                                labelText: AppLocalizations.of(context)!.password,
+                                hintText: AppLocalizations.of(context)!.passwordHint,
                                 prefixIcon: const Icon(Icons.lock),
                                 border: OutlineInputBorder(
                                   borderRadius: BorderRadius.circular(12),
@@ -200,10 +201,10 @@ class _RegisterPageState extends State<RegisterPage> {
                               ),
                               validator: (value) {
                                 if (value == null || value.isEmpty) {
-                                  return '請輸入密碼';
+                                  return AppLocalizations.of(context)!.passwordError;
                                 }
                                 if (value.length < 6) {
-                                  return '密碼至少需要 6 個字元';
+                                  return AppLocalizations.of(context)!.passwordLength;
                                 }
                                 return null;
                               },
@@ -232,9 +233,9 @@ class _RegisterPageState extends State<RegisterPage> {
                                           valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
                                         ),
                                       )
-                                    : const Text(
-                                        '確認註冊',
-                                        style: TextStyle(
+                                    : Text(
+                                        AppLocalizations.of(context)!.confirmRegister,
+                                        style: const TextStyle(
                                           fontSize: 16,
                                           fontWeight: FontWeight.bold,
                                         ),
@@ -248,9 +249,9 @@ class _RegisterPageState extends State<RegisterPage> {
                               onPressed: () {
                                 Navigator.of(context).pop();
                               },
-                              child: const Text(
-                                '已有帳號？返回登入',
-                                style: TextStyle(
+                              child: Text(
+                                AppLocalizations.of(context)!.backToLogin,
+                                style: const TextStyle(
                                   fontSize: 14,
                                   color: Colors.blue,
                                 ),

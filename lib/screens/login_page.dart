@@ -1,5 +1,6 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
+import '../l10n/app_localizations.dart';
 import 'home_page.dart';
 import 'register_page.dart';
 import '../services/auth_service.dart';
@@ -69,14 +70,14 @@ class _LoginPageState extends State<LoginPage> {
           );
         }
       } else {
-        if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text(result['message'] ?? '登入失败'),
-              backgroundColor: Colors.red,
-            ),
-          );
-        }
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(result['message'] ?? AppLocalizations.of(context)!.loginFailed),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
       }
     }
   }
@@ -103,7 +104,7 @@ class _LoginPageState extends State<LoginPage> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text(result['message'] ?? 'LINE 登入失敗'),
+            content: Text(result['message'] ?? AppLocalizations.of(context)!.lineLoginFailed),
             backgroundColor: Colors.red,
           ),
         );
@@ -133,7 +134,7 @@ class _LoginPageState extends State<LoginPage> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text(result['message'] ?? 'Apple 登入失敗'),
+            content: Text(result['message'] ?? AppLocalizations.of(context)!.appleLoginFailed),
             backgroundColor: Colors.red,
           ),
         );
@@ -192,18 +193,18 @@ class _LoginPageState extends State<LoginPage> {
                   const SizedBox(height: 30),
                   
                   // Title
-                  const Text(
-                    '一鍵叫車',
-                    style: TextStyle(
+                  Text(
+                    AppLocalizations.of(context)!.appName,
+                    style: const TextStyle(
                       fontSize: 36,
                       fontWeight: FontWeight.bold,
                       color: Colors.white,
                     ),
                   ),
                   const SizedBox(height: 10),
-                  const Text(
-                    '快速、便捷、安全',
-                    style: TextStyle(
+                  Text(
+                    AppLocalizations.of(context)!.appSlogan,
+                    style: const TextStyle(
                       fontSize: 16,
                       color: Colors.white70,
                     ),
@@ -228,8 +229,8 @@ class _LoginPageState extends State<LoginPage> {
                               controller: _phoneController,
                               keyboardType: TextInputType.phone,
                               decoration: InputDecoration(
-                                labelText: '手機號碼',
-                                hintText: '請輸入手機號碼',
+                                labelText: AppLocalizations.of(context)!.phone,
+                                hintText: AppLocalizations.of(context)!.phoneHint,
                                 prefixIcon: const Icon(Icons.phone),
                                 border: OutlineInputBorder(
                                   borderRadius: BorderRadius.circular(12),
@@ -239,10 +240,10 @@ class _LoginPageState extends State<LoginPage> {
                               ),
                               validator: (value) {
                                 if (value == null || value.isEmpty) {
-                                  return '請輸入手機號碼';
+                                  return AppLocalizations.of(context)!.phoneError;
                                 }
                                 if (value.length < 10) {
-                                  return '請輸入有效的手機號碼';
+                                  return AppLocalizations.of(context)!.phoneInvalid;
                                 }
                                 return null;
                               },
@@ -254,8 +255,8 @@ class _LoginPageState extends State<LoginPage> {
                               controller: _passwordController,
                               obscureText: true,
                               decoration: InputDecoration(
-                                labelText: '密碼',
-                                hintText: '請輸入密碼',
+                                labelText: AppLocalizations.of(context)!.password,
+                                hintText: AppLocalizations.of(context)!.passwordHint,
                                 prefixIcon: const Icon(Icons.lock),
                                 border: OutlineInputBorder(
                                   borderRadius: BorderRadius.circular(12),
@@ -265,10 +266,10 @@ class _LoginPageState extends State<LoginPage> {
                               ),
                               validator: (value) {
                                 if (value == null || value.isEmpty) {
-                                  return '請輸入密碼';
+                                  return AppLocalizations.of(context)!.passwordError;
                                 }
                                 if (value.length < 6) {
-                                  return '密碼至少需要 6 個字元';
+                                  return AppLocalizations.of(context)!.passwordLength;
                                 }
                                 return null;
                               },
@@ -297,9 +298,9 @@ class _LoginPageState extends State<LoginPage> {
                                           valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
                                         ),
                                       )
-                                    : const Text(
-                                        '手機登入',
-                                        style: TextStyle(
+                                    : Text(
+                                        AppLocalizations.of(context)!.phoneLogin,
+                                        style: const TextStyle(
                                           fontSize: 16,
                                           fontWeight: FontWeight.bold,
                                         ),
@@ -315,9 +316,9 @@ class _LoginPageState extends State<LoginPage> {
                               child: ElevatedButton.icon(
                                 onPressed: _isLoading ? null : _handleLineLogin,
                                 icon: const Icon(Icons.chat_bubble, size: 24),
-                                label: const Text(
-                                  'LINE 登入',
-                                  style: TextStyle(
+                                label: Text(
+                                  AppLocalizations.of(context)!.lineLogin,
+                                  style: const TextStyle(
                                     fontSize: 16,
                                     fontWeight: FontWeight.bold,
                                   ),
@@ -341,9 +342,9 @@ class _LoginPageState extends State<LoginPage> {
                                 child: ElevatedButton.icon(
                                   onPressed: _isLoading ? null : _handleAppleLogin,
                                   icon: const Icon(Icons.apple, size: 24),
-                                  label: const Text(
-                                    'Apple 登入',
-                                    style: TextStyle(
+                                  label: Text(
+                                    AppLocalizations.of(context)!.appleLogin,
+                                    style: const TextStyle(
                                       fontSize: 16,
                                       fontWeight: FontWeight.bold,
                                     ),
@@ -367,7 +368,7 @@ class _LoginPageState extends State<LoginPage> {
                                 Padding(
                                   padding: const EdgeInsets.symmetric(horizontal: 16),
                                   child: Text(
-                                    '或',
+                                    AppLocalizations.of(context)!.or,
                                     style: TextStyle(color: Colors.grey.shade600),
                                   ),
                                 ),
@@ -379,9 +380,9 @@ class _LoginPageState extends State<LoginPage> {
                             // Register Link
                             TextButton(
                               onPressed: _navigateToRegister,
-                              child: const Text(
-                                '手機註冊',
-                                style: TextStyle(
+                              child: Text(
+                                AppLocalizations.of(context)!.phoneRegister,
+                                style: const TextStyle(
                                   fontSize: 16,
                                   color: Colors.blue,
                                   fontWeight: FontWeight.w500,

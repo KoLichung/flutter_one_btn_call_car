@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
+import '../l10n/app_localizations.dart';
 import '../services/chat_service.dart';
 import '../services/storage_service.dart';
 import '../models/customer.dart';
@@ -58,7 +59,7 @@ class _ChatPageState extends State<ChatPage> {
     if (widget.caseId == null) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('缺少訂單ID')),
+          SnackBar(content: Text(AppLocalizations.of(context)!.messageMissing)),
         );
       }
       return;
@@ -69,7 +70,7 @@ class _ChatPageState extends State<ChatPage> {
     if (_customer == null) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('請先登入')),
+          SnackBar(content: Text(AppLocalizations.of(context)!.pleaseLogin)),
         );
       }
       return;
@@ -85,7 +86,7 @@ class _ChatPageState extends State<ChatPage> {
     if (!conversationResult['success']) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(conversationResult['message'] ?? '初始化對話失敗')),
+          SnackBar(content: Text(conversationResult['message'] ?? AppLocalizations.of(context)!.chatInitFailed)),
         );
       }
       return;
@@ -169,7 +170,7 @@ class _ChatPageState extends State<ChatPage> {
       });
       if (mounted && !isLoadMore) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(result['message'] ?? '加載消息失敗')),
+          SnackBar(content: Text(result['message'] ?? AppLocalizations.of(context)!.loadMessagesFailed)),
         );
       }
     }
@@ -320,7 +321,7 @@ class _ChatPageState extends State<ChatPage> {
       });
 
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(result['message'] ?? '發送失敗')),
+        SnackBar(content: Text(result['message'] ?? AppLocalizations.of(context)!.sendFailed)),
       );
     }
     // 如果成功，temp message會在下次輪詢時被服務器消息替換
@@ -373,7 +374,7 @@ class _ChatPageState extends State<ChatPage> {
                         ),
                         const SizedBox(height: 16),
                         Text(
-                          '開始對話',
+                          AppLocalizations.of(context)!.startConversation,
                           style: TextStyle(
                             fontSize: 16,
                             color: Colors.grey.shade600,
@@ -432,7 +433,7 @@ class _ChatPageState extends State<ChatPage> {
                     child: TextField(
                       controller: _messageController,
                       decoration: InputDecoration(
-                        hintText: '輸入訊息...',
+                        hintText: AppLocalizations.of(context)!.messageHint,
                         border: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(24),
                           borderSide: BorderSide(color: Colors.grey.shade300),

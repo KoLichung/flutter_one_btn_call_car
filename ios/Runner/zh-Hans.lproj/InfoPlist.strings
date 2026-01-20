@@ -1,0 +1,5 @@
+CFBundleDisplayName = "一键叫车";
+CFBundleName = "一键叫车";
+NSLocationAlwaysAndWhenInUseUsageDescription = "需要访问您的位置以提供叫车服务";
+NSLocationAlwaysUsageDescription = "需要访问您的位置以提供叫车服务";
+NSLocationWhenInUseUsageDescription = "需要访问您的位置以提供叫车服务";

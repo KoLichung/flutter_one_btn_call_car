@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../l10n/app_localizations.dart';
 import '../models/customer.dart';
 import '../services/auth_service.dart';
 import 'login_page.dart';
@@ -16,16 +17,16 @@ class _ProfileDetailPageState extends State<ProfileDetailPage> {
   final AuthService _authService = AuthService();
   bool _isDeleting = false;
 
-  String _getLoginMethodText() {
+  String _getLoginMethodText(BuildContext context) {
     switch (widget.customer.loginMethod) {
       case 'phone':
-        return '手機登入 (${widget.customer.phone ?? ''})';
+        return AppLocalizations.of(context)!.phoneLoginMethod(widget.customer.phone ?? '');
       case 'line':
-        return 'LINE 登入';
+        return AppLocalizations.of(context)!.lineLoginMethod;
       case 'apple':
-        return 'Apple 登入';
+        return AppLocalizations.of(context)!.appleLoginMethod;
       default:
-        return '未知';
+        return AppLocalizations.of(context)!.unknown;
     }
   }
 
@@ -60,36 +61,36 @@ class _ProfileDetailPageState extends State<ProfileDetailPage> {
     final firstConfirm = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Row(
+        title: Row(
           children: [
-            Icon(Icons.warning_amber_rounded, color: Colors.red, size: 28),
-            SizedBox(width: 8),
-            Text('刪除帳號'),
+            const Icon(Icons.warning_amber_rounded, color: Colors.red, size: 28),
+            const SizedBox(width: 8),
+            Text(AppLocalizations.of(context)!.deleteAccountTitle),
           ],
         ),
-        content: const Column(
+        content: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              '您確定要刪除帳號嗎？',
-              style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+              AppLocalizations.of(context)!.deleteAccountConfirm,
+              style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
             ),
-            SizedBox(height: 12),
+            const SizedBox(height: 12),
             Text(
-              '⚠️ 刪除後將無法恢復',
-              style: TextStyle(color: Colors.red),
+              AppLocalizations.of(context)!.deleteAccountWarning,
+              style: const TextStyle(color: Colors.red),
             ),
-            SizedBox(height: 8),
-            Text('• 您的個人資料將被永久刪除'),
-            Text('• 歷史訂單記錄將保留但不再關聯您的帳號'),
-            Text('• 此操作無法撤銷'),
+            const SizedBox(height: 8),
+            Text(AppLocalizations.of(context)!.deleteAccountInfo1),
+            Text(AppLocalizations.of(context)!.deleteAccountInfo2),
+            Text(AppLocalizations.of(context)!.deleteAccountInfo3),
           ],
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(context).pop(false),
-            child: const Text('取消'),
+            child: Text(AppLocalizations.of(context)!.cancel),
           ),
           ElevatedButton(
             onPressed: () => Navigator.of(context).pop(true),
@@ -97,7 +98,7 @@ class _ProfileDetailPageState extends State<ProfileDetailPage> {
               backgroundColor: Colors.red,
               foregroundColor: Colors.white,
             ),
-            child: const Text('確定刪除'),
+            child: Text(AppLocalizations.of(context)!.confirmDelete),
           ),
         ],
       ),
@@ -109,15 +110,15 @@ class _ProfileDetailPageState extends State<ProfileDetailPage> {
     final secondConfirm = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('最後確認'),
-        content: const Text(
-          '此操作無法恢復！\n\n確定要永久刪除您的帳號嗎？',
-          style: TextStyle(fontSize: 16),
+        title: Text(AppLocalizations.of(context)!.lastConfirm),
+        content: Text(
+          AppLocalizations.of(context)!.lastConfirmMessage,
+          style: const TextStyle(fontSize: 16),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(context).pop(false),
-            child: const Text('取消'),
+            child: Text(AppLocalizations.of(context)!.cancel),
           ),
           ElevatedButton(
             onPressed: () => Navigator.of(context).pop(true),
@@ -125,7 +126,7 @@ class _ProfileDetailPageState extends State<ProfileDetailPage> {
               backgroundColor: Colors.red,
               foregroundColor: Colors.white,
             ),
-            child: const Text('確定，永久刪除'),
+            child: Text(AppLocalizations.of(context)!.confirmDeleteForever),
           ),
         ],
       ),
@@ -148,8 +149,8 @@ class _ProfileDetailPageState extends State<ProfileDetailPage> {
 
     if (result['success'] == true) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('帳號已成功刪除'),
+        SnackBar(
+          content: Text(AppLocalizations.of(context)!.accountDeleted),
           backgroundColor: Colors.green,
         ),
       );
@@ -162,7 +163,7 @@ class _ProfileDetailPageState extends State<ProfileDetailPage> {
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text(result['message'] ?? '刪除帳號失敗'),
+          content: Text(result['message'] ?? AppLocalizations.of(context)!.accountDeleteFailed),
           backgroundColor: Colors.red,
         ),
       );
@@ -173,7 +174,7 @@ class _ProfileDetailPageState extends State<ProfileDetailPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('帳號詳情'),
+        title: Text(AppLocalizations.of(context)!.accountDetails),
         centerTitle: true,
         elevation: 0,
         backgroundColor: Colors.blue,
@@ -267,7 +268,7 @@ class _ProfileDetailPageState extends State<ProfileDetailPage> {
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 Text(
-                                  '登入方式',
+                                  AppLocalizations.of(context)!.loginMethod,
                                   style: TextStyle(
                                     fontSize: 12,
                                     color: Colors.grey.shade600,
@@ -275,7 +276,7 @@ class _ProfileDetailPageState extends State<ProfileDetailPage> {
                                 ),
                                 const SizedBox(height: 4),
                                 Text(
-                                  _getLoginMethodText(),
+                                  _getLoginMethodText(context),
                                   style: const TextStyle(
                                     fontSize: 16,
                                     fontWeight: FontWeight.bold,
@@ -292,9 +293,9 @@ class _ProfileDetailPageState extends State<ProfileDetailPage> {
                   const SizedBox(height: 40),
                   
                   // Danger Zone
-                  const Text(
-                    '危險區域',
-                    style: TextStyle(
+                  Text(
+                    AppLocalizations.of(context)!.dangerZone,
+                    style: const TextStyle(
                       fontSize: 14,
                       fontWeight: FontWeight.bold,
                       color: Colors.red,
@@ -342,9 +343,9 @@ class _ProfileDetailPageState extends State<ProfileDetailPage> {
                               child: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
-                                  const Text(
-                                    '刪除帳號',
-                                    style: TextStyle(
+                                  Text(
+                                    AppLocalizations.of(context)!.deleteAccount,
+                                    style: const TextStyle(
                                       fontSize: 16,
                                       fontWeight: FontWeight.bold,
                                       color: Colors.red,
@@ -352,7 +353,7 @@ class _ProfileDetailPageState extends State<ProfileDetailPage> {
                                   ),
                                   const SizedBox(height: 4),
                                   Text(
-                                    '永久刪除您的帳號和所有資料',
+                                    AppLocalizations.of(context)!.deleteAccountSubtitle,
                                     style: TextStyle(
                                       fontSize: 12,
                                       color: Colors.grey.shade600,

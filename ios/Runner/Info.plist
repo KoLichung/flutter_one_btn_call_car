@@ -7,7 +7,7 @@
 	<key>CFBundleDevelopmentRegion</key>
 	<string>$(DEVELOPMENT_LANGUAGE)</string>
 	<key>CFBundleDisplayName</key>
-	<string>一鍵叫車</string>
+	<string>Easy Ride</string>
 	<key>CFBundleExecutable</key>
 	<string>$(EXECUTABLE_NAME)</string>
 	<key>CFBundleIdentifier</key>
@@ -51,11 +51,11 @@
 		<string>2008591636</string>
 	</dict>
 	<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
-	<string>需要存取您的位置以提供叫車服務</string>
+	<string>Location permission is required to provide ride services</string>
 	<key>NSLocationAlwaysUsageDescription</key>
-	<string>需要存取您的位置以提供叫車服務</string>
+	<string>Location permission is required to provide ride services</string>
 	<key>NSLocationWhenInUseUsageDescription</key>
-	<string>需要存取您的位置以提供叫車服務</string>
+	<string>Location permission is required to provide ride services</string>
 	<key>UIApplicationSupportsIndirectInputEvents</key>
 	<true/>
 	<key>UIBackgroundModes</key>
