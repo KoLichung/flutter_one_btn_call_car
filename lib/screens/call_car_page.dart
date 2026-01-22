@@ -24,6 +24,15 @@ class CallCarPage extends StatefulWidget {
 
   @override
   State<CallCarPage> createState() => _CallCarPageState();
+  
+  // 静态方法：检查是否有活动案件
+  static bool hasActiveCase(GlobalKey<State<CallCarPage>> key) {
+    final state = key.currentState;
+    if (state == null || state is! _CallCarPageState) return false;
+    
+    final callCarState = state.currentState;
+    return callCarState != CallCarState.idle && callCarState != CallCarState.finished;
+  }
 }
 
 class _CallCarPageState extends State<CallCarPage> {
@@ -50,6 +59,9 @@ class _CallCarPageState extends State<CallCarPage> {
   // UI 狀態
   BitmapDescriptor? _carIcon;
   bool _isLoading = false;
+
+  // 暴露当前状态给外部访问
+  CallCarState get currentState => _state;
 
   @override
   void initState() {
@@ -263,188 +275,359 @@ class _CallCarPageState extends State<CallCarPage> {
   }
 
   Widget _buildDriverInfoCard() {
+    // 检查当前语言是否为英文
+    final isEnglish = Localizations.localeOf(context).languageCode == 'en';
+    
     return Card(
       elevation: 8,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
       child: Padding(
         padding: const EdgeInsets.all(12.0),
-        child: Row(
+        child: isEnglish ? _buildEnglishLayout() : _buildChineseLayout(),
+      ),
+    );
+  }
+
+  // 英文布局：垂直排列
+  Widget _buildEnglishLayout() {
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        // 头像
+        Container(
+          width: 50,
+          height: 50,
+          decoration: BoxDecoration(
+            color: Colors.blue.shade100,
+            shape: BoxShape.circle,
+          ),
+          child: const Icon(Icons.person, color: Colors.blue, size: 30),
+        ),
+        const SizedBox(width: 12),
+        // 信息区域：垂直排列
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // 司机名字
+              Text(
+                _driver!.nickName,
+                style: const TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              const SizedBox(height: 4),
+              // 车辆信息
+              Text(
+                '${_driver!.carColor} ${_driver!.carLicence}',
+                style: TextStyle(
+                  fontSize: 14,
+                  color: Colors.grey.shade600,
+                ),
+              ),
+              const SizedBox(height: 6),
+              // 状态标签
+              if (_state == CallCarState.driverOnWay)
+                Row(
+                  children: [
+                    const Icon(Icons.directions_car, size: 16, color: Colors.green),
+                    const SizedBox(width: 4),
+                    Flexible(
+                      child: Text(
+                        AppLocalizations.of(context)!.driverOnWay,
+                        style: const TextStyle(
+                          fontSize: 14,
+                          color: Colors.green,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              if (_state == CallCarState.arrived)
+                Row(
+                  children: [
+                    const Icon(Icons.notifications_active, size: 16, color: Colors.orange),
+                    const SizedBox(width: 4),
+                    Flexible(
+                      child: Text(
+                        AppLocalizations.of(context)!.driverArrived,
+                        style: const TextStyle(
+                          fontSize: 14,
+                          color: Colors.orange,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              if (_state == CallCarState.onBoard)
+                Row(
+                  children: [
+                    const Icon(Icons.navigation, size: 16, color: Colors.blue),
+                    const SizedBox(width: 4),
+                    Flexible(
+                      child: Text(
+                        AppLocalizations.of(context)!.onBoard,
+                        style: const TextStyle(
+                          fontSize: 14,
+                          color: Colors.blue,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+            ],
+          ),
+        ),
+        // 聊天按钮（旅程中不显示）
+        if (_state != CallCarState.onBoard)
+          Stack(
+            clipBehavior: Clip.none,
+            children: [
+              IconButton(
+                onPressed: () {
+                  print('🔵 [CallCarPage] 進入聊天頁面，停止 tracking');
+                  _rideService.stopTracking();
+                  
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => ChatPage(
+                        driverName: _driver!.nickName,
+                        driverId: _driver!.id?.toString(),
+                        caseId: _currentCaseId?.toString(),
+                      ),
+                    ),
+                  ).then((_) {
+                    print('🔵 [CallCarPage] 從聊天頁面返回，恢復 tracking');
+                    setState(() {
+                      _unreadMessagesCount = 0;
+                    });
+                    
+                    if (_currentCaseId != null && 
+                        (_state == CallCarState.driverOnWay || 
+                         _state == CallCarState.arrived || 
+                         _state == CallCarState.onBoard)) {
+                      _startTracking();
+                    }
+                  });
+                },
+                icon: const Icon(
+                  Icons.chat,
+                  color: Colors.blue,
+                  size: 24,
+                ),
+                padding: EdgeInsets.zero,
+                constraints: const BoxConstraints(),
+              ),
+              if (_unreadMessagesCount > 0)
+                Positioned(
+                  right: 0,
+                  top: 0,
+                  child: Container(
+                    padding: const EdgeInsets.all(4),
+                    decoration: const BoxDecoration(
+                      color: Colors.red,
+                      shape: BoxShape.circle,
+                    ),
+                    constraints: const BoxConstraints(
+                      minWidth: 16,
+                      minHeight: 16,
+                    ),
+                    child: Text(
+                      _unreadMessagesCount > 99 ? '99+' : '$_unreadMessagesCount',
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 10,
+                        fontWeight: FontWeight.bold,
+                      ),
+                      textAlign: TextAlign.center,
+                    ),
+                  ),
+                ),
+            ],
+          ),
+      ],
+    );
+  }
+
+  // 中文布局：原来的水平排列
+  Widget _buildChineseLayout() {
+    return Row(
+      children: [
+        Container(
+          width: 50,
+          height: 50,
+          decoration: BoxDecoration(
+            color: Colors.blue.shade100,
+            shape: BoxShape.circle,
+          ),
+          child: const Icon(Icons.person, color: Colors.blue, size: 30),
+        ),
+        const SizedBox(width: 8),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                _driver!.nickName,
+                style: const TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              Text(
+                '${_driver!.carColor} ${_driver!.carLicence}',
+                style: TextStyle(
+                  fontSize: 14,
+                  color: Colors.grey.shade600,
+                ),
+              ),
+            ],
+          ),
+        ),
+        // 狀態標籤和對話icon靠右對齊
+        Row(
+          mainAxisSize: MainAxisSize.min,
           children: [
-            Container(
-              width: 50,
-              height: 50,
-              decoration: BoxDecoration(
-                color: Colors.blue.shade100,
-                shape: BoxShape.circle,
+            // 狀態標籤
+            if (_state == CallCarState.driverOnWay)
+              Container(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 6,
+                  vertical: 6,
+                ),
+                decoration: BoxDecoration(
+                  color: Colors.green.shade100,
+                  borderRadius: BorderRadius.circular(20),
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    const Icon(Icons.directions_car, size: 16, color: Colors.green),
+                    const SizedBox(width: 4),
+                    Text(
+                      AppLocalizations.of(context)!.driverOnWay,
+                      style: const TextStyle(
+                        color: Colors.green,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ],
+                ),
               ),
-              child: const Icon(Icons.person, color: Colors.blue, size: 30),
-            ),
-            const SizedBox(width: 8),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
+            if (_state == CallCarState.arrived)
+              Container(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 6,
+                  vertical: 6,
+                ),
+                decoration: BoxDecoration(
+                  color: Colors.orange.shade100,
+                  borderRadius: BorderRadius.circular(20),
+                ),
+                child: Text(
+                  AppLocalizations.of(context)!.driverArrived,
+                  style: const TextStyle(
+                    color: Colors.orange,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ),
+            if (_state == CallCarState.onBoard)
+              Container(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 6,
+                  vertical: 6,
+                ),
+                decoration: BoxDecoration(
+                  color: Colors.blue.shade100,
+                  borderRadius: BorderRadius.circular(20),
+                ),
+                child: Text(
+                  AppLocalizations.of(context)!.onBoard,
+                  style: const TextStyle(
+                    color: Colors.blue,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ),
+            // 對話icon（旅程中狀態不顯示）
+            if (_state != CallCarState.onBoard) ...[
+              const SizedBox(width: 8),
+              Stack(
+                clipBehavior: Clip.none,
                 children: [
-                  Text(
-                    _driver!.nickName,
-                    style: const TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
+                  IconButton(
+                    onPressed: () {
+                      print('🔵 [CallCarPage] 進入聊天頁面，停止 tracking');
+                      _rideService.stopTracking();
+                      
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => ChatPage(
+                            driverName: _driver!.nickName,
+                            driverId: _driver!.id?.toString(),
+                            caseId: _currentCaseId?.toString(),
+                          ),
+                        ),
+                      ).then((_) {
+                        print('🔵 [CallCarPage] 從聊天頁面返回，恢復 tracking');
+                        setState(() {
+                          _unreadMessagesCount = 0;
+                        });
+                        
+                        if (_currentCaseId != null && 
+                            (_state == CallCarState.driverOnWay || 
+                             _state == CallCarState.arrived || 
+                             _state == CallCarState.onBoard)) {
+                          _startTracking();
+                        }
+                      });
+                    },
+                    icon: const Icon(
+                      Icons.chat,
+                      color: Colors.blue,
+                      size: 24,
                     ),
+                    padding: EdgeInsets.zero,
+                    constraints: const BoxConstraints(),
                   ),
-                  Text(
-                    '${_driver!.carColor} ${_driver!.carLicence}',
-                    style: TextStyle(
-                      fontSize: 14,
-                      color: Colors.grey.shade600,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            // 狀態標籤和對話icon靠右對齊
-            Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                // 狀態標籤
-                if (_state == CallCarState.driverOnWay)
-                  Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 6,
-                      vertical: 6,
-                    ),
-                    decoration: BoxDecoration(
-                      color: Colors.green.shade100,
-                      borderRadius: BorderRadius.circular(20),
-                    ),
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        const Icon(Icons.directions_car, size: 16, color: Colors.green),
-                        const SizedBox(width: 4),
-                        Text(
-                          AppLocalizations.of(context)!.driverOnWay,
+                  if (_unreadMessagesCount > 0)
+                    Positioned(
+                      right: 0,
+                      top: 0,
+                      child: Container(
+                        padding: const EdgeInsets.all(4),
+                        decoration: const BoxDecoration(
+                          color: Colors.red,
+                          shape: BoxShape.circle,
+                        ),
+                        constraints: const BoxConstraints(
+                          minWidth: 16,
+                          minHeight: 16,
+                        ),
+                        child: Text(
+                          _unreadMessagesCount > 99 ? '99+' : '$_unreadMessagesCount',
                           style: const TextStyle(
-                            color: Colors.green,
+                            color: Colors.white,
+                            fontSize: 10,
                             fontWeight: FontWeight.bold,
                           ),
+                          textAlign: TextAlign.center,
                         ),
-                      ],
-                    ),
-                  ),
-                if (_state == CallCarState.arrived)
-                  Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 6,
-                      vertical: 6,
-                    ),
-                    decoration: BoxDecoration(
-                      color: Colors.orange.shade100,
-                      borderRadius: BorderRadius.circular(20),
-                    ),
-                    child: Text(
-                      AppLocalizations.of(context)!.driverArrived,
-                      style: const TextStyle(
-                        color: Colors.orange,
-                        fontWeight: FontWeight.bold,
                       ),
                     ),
-                  ),
-                if (_state == CallCarState.onBoard)
-                  Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 6,
-                      vertical: 6,
-                    ),
-                    decoration: BoxDecoration(
-                      color: Colors.blue.shade100,
-                      borderRadius: BorderRadius.circular(20),
-                    ),
-                    child: Text(
-                      AppLocalizations.of(context)!.onBoard,
-                      style: const TextStyle(
-                        color: Colors.blue,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                  ),
-                // 對話icon（旅程中狀態不顯示）
-                if (_state != CallCarState.onBoard) ...[
-                  const SizedBox(width: 8),
-                  Stack(
-                    clipBehavior: Clip.none,
-                    children: [
-                      IconButton(
-                        onPressed: () {
-                        // 進入聊天頁面時停止 tracking
-                        print('🔵 [CallCarPage] 進入聊天頁面，停止 tracking');
-                        _rideService.stopTracking();
-                        
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) => ChatPage(
-                              driverName: _driver!.nickName,
-                              driverId: _driver!.id?.toString(),
-                              caseId: _currentCaseId?.toString(),
-                            ),
-                          ),
-                        ).then((_) {
-                          // 從聊天頁面返回時，重置未讀消息數並恢復 tracking
-                          print('🔵 [CallCarPage] 從聊天頁面返回，恢復 tracking');
-                          setState(() {
-                            _unreadMessagesCount = 0;
-                          });
-                          
-                          // 恢復 tracking
-                          if (_currentCaseId != null && 
-                              (_state == CallCarState.driverOnWay || 
-                               _state == CallCarState.arrived || 
-                               _state == CallCarState.onBoard)) {
-                            _startTracking();
-                          }
-                        });
-                      },
-                      icon: const Icon(
-                        Icons.chat,
-                        color: Colors.blue,
-                        size: 24,
-                      ),
-                        padding: EdgeInsets.zero,
-                        constraints: const BoxConstraints(),
-                      ),
-                      if (_unreadMessagesCount > 0)
-                        Positioned(
-                          right: 0,
-                          top: 0,
-                          child: Container(
-                            padding: const EdgeInsets.all(4),
-                            decoration: BoxDecoration(
-                              color: Colors.red,
-                              shape: BoxShape.circle,
-                            ),
-                            constraints: const BoxConstraints(
-                              minWidth: 16,
-                              minHeight: 16,
-                            ),
-                            child: Text(
-                              _unreadMessagesCount > 99 ? '99+' : '$_unreadMessagesCount',
-                              style: const TextStyle(
-                                color: Colors.white,
-                                fontSize: 10,
-                                fontWeight: FontWeight.bold,
-                              ),
-                              textAlign: TextAlign.center,
-                            ),
-                          ),
-                        ),
-                    ],
-                  ),
                 ],
-              ],
-            ),
+              ),
+            ],
           ],
         ),
-      ),
+      ],
     );
   }
 

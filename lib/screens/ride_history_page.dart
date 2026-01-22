@@ -13,30 +13,76 @@ class RideHistoryPage extends StatefulWidget {
 
 class _RideHistoryPageState extends State<RideHistoryPage> {
   final RideService _rideService = RideService();
+  final ScrollController _scrollController = ScrollController();
+  
   List<RideRecord> _rideHistory = [];
   bool _isLoading = true;
+  bool _isLoadingMore = false;
   String? _errorMessage;
+  
+  int _currentPage = 1;
+  int _totalCount = 0;
+  final int _pageSize = 20;
 
   @override
   void initState() {
     super.initState();
     _loadHistory();
+    _scrollController.addListener(_onScroll);
+  }
+
+  @override
+  void dispose() {
+    _scrollController.dispose();
+    super.dispose();
+  }
+
+  void _onScroll() {
+    if (_scrollController.position.pixels >= _scrollController.position.maxScrollExtent - 200) {
+      // 滾動到底部前200像素時開始加載
+      if (!_isLoadingMore && _rideHistory.length < _totalCount) {
+        _loadMoreHistory();
+      }
+    }
   }
 
   Future<void> _loadHistory() async {
     setState(() {
       _isLoading = true;
       _errorMessage = null;
+      _currentPage = 1;
     });
 
-    final result = await _rideService.getHistory();
+    final result = await _rideService.getHistory(page: 1, pageSize: _pageSize);
 
     setState(() {
       _isLoading = false;
       if (result['success'] == true) {
         _rideHistory = result['cases'] as List<RideRecord>;
+        _totalCount = result['total_count'] ?? 0;
+        _currentPage = result['page'] ?? 1;
       } else {
         _errorMessage = result['message'];
+      }
+    });
+  }
+
+  Future<void> _loadMoreHistory() async {
+    if (_isLoadingMore) return;
+
+    setState(() {
+      _isLoadingMore = true;
+    });
+
+    final nextPage = _currentPage + 1;
+    final result = await _rideService.getHistory(page: nextPage, pageSize: _pageSize);
+
+    setState(() {
+      _isLoadingMore = false;
+      if (result['success'] == true) {
+        final newCases = result['cases'] as List<RideRecord>;
+        _rideHistory.addAll(newCases);
+        _currentPage = nextPage;
       }
     });
   }
@@ -104,15 +150,23 @@ class _RideHistoryPageState extends State<RideHistoryPage> {
                               ],
                             ),
                           )
-                        : RefreshIndicator(
-                            onRefresh: _loadHistory,
-                            child: ListView.builder(
-                              padding: const EdgeInsets.all(16),
-                              itemCount: _rideHistory.length,
-                              itemBuilder: (context, index) {
+                        : ListView.builder(
+                            controller: _scrollController,
+                            padding: const EdgeInsets.all(16),
+                            itemCount: _rideHistory.length + (_isLoadingMore ? 1 : 0),
+                            itemBuilder: (context, index) {
+                              if (index < _rideHistory.length) {
                                 return _buildRideCard(_rideHistory[index]);
-                              },
-                            ),
+                              } else {
+                                // 加載更多指示器
+                                return const Padding(
+                                  padding: EdgeInsets.symmetric(vertical: 16),
+                                  child: Center(
+                                    child: CircularProgressIndicator(),
+                                  ),
+                                );
+                              }
+                            },
                           ),
           ),
         ],
@@ -211,18 +265,17 @@ class _RideHistoryPageState extends State<RideHistoryPage> {
   }
 
   String _formatDate(DateTime date) {
-    final now = DateTime.now();
-    final difference = now.difference(date);
+    // Add 8 hours for UTC+8 timezone
+    final localDate = date.add(const Duration(hours: 8));
     
-    if (difference.inDays == 0) {
-      return '${AppLocalizations.of(context)!.today} ${date.hour.toString().padLeft(2, '0')}:${date.minute.toString().padLeft(2, '0')}';
-    } else if (difference.inDays == 1) {
-      return '${AppLocalizations.of(context)!.yesterday} ${date.hour.toString().padLeft(2, '0')}:${date.minute.toString().padLeft(2, '0')}';
-    } else if (difference.inDays < 7) {
-      return AppLocalizations.of(context)!.daysAgo(difference.inDays);
-    } else {
-      return '${date.year}/${date.month}/${date.day}';
-    }
+    // Format as YYYYMMDD HH:mm
+    final year = localDate.year.toString();
+    final month = localDate.month.toString().padLeft(2, '0');
+    final day = localDate.day.toString().padLeft(2, '0');
+    final hour = localDate.hour.toString().padLeft(2, '0');
+    final minute = localDate.minute.toString().padLeft(2, '0');
+    
+    return '$year/$month/$day $hour:$minute';
   }
 
   Color _getStatusColor(String status) {

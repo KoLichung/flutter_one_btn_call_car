@@ -119,5 +119,7 @@
   "pleaseLogin": "請先登入",
   "chatInitFailed": "初始化對話失敗",
   "loadMessagesFailed": "加載消息失敗",
-  "sendFailed": "發送失敗"
+  "sendFailed": "發送失敗",
+  
+  "cannotSwitchWithActiveCase": "案件進行中無法切換頁面"
 }

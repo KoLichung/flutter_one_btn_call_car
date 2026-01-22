@@ -323,6 +323,9 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get sendFailed => '發送失敗';
+
+  @override
+  String get cannotSwitchWithActiveCase => '案件進行中無法切換頁面';
 }
 
 /// The translations for Chinese, using the Han script (`zh_Hans`).
@@ -644,4 +647,7 @@ class AppLocalizationsZhHans extends AppLocalizationsZh {
 
   @override
   String get sendFailed => '发送失败';
+
+  @override
+  String get cannotSwitchWithActiveCase => '案件进行中无法切换页面';
 }

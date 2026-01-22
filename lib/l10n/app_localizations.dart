@@ -722,6 +722,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Failed to send'**
   String get sendFailed;
+
+  /// No description provided for @cannotSwitchWithActiveCase.
+  ///
+  /// In en, this message translates to:
+  /// **'Cannot switch tabs while a trip is in progress'**
+  String get cannotSwitchWithActiveCase;
 }
 
 class _AppLocalizationsDelegate

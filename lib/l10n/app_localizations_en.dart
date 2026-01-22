@@ -330,4 +330,8 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get sendFailed => 'Failed to send';
+
+  @override
+  String get cannotSwitchWithActiveCase =>
+      'Cannot switch tabs while a trip is in progress';
 }

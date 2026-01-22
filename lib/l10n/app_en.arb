@@ -129,5 +129,7 @@
   "pleaseLogin": "Please login first",
   "chatInitFailed": "Failed to initialize chat",
   "loadMessagesFailed": "Failed to load messages",
-  "sendFailed": "Failed to send"
+  "sendFailed": "Failed to send",
+  
+  "cannotSwitchWithActiveCase": "Cannot switch tabs while a trip is in progress"
 }
