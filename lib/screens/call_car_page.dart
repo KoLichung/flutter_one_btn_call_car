@@ -56,12 +56,36 @@ class _CallCarPageState extends State<CallCarPage> {
   // 未讀消息數
   int _unreadMessagesCount = 0;
   
+  // 司機預計到達時間（秒）
+  int? _userExpectSecond;
+  
   // UI 狀態
   BitmapDescriptor? _carIcon;
   bool _isLoading = false;
 
   // 暴露当前状态给外部访问
   CallCarState get currentState => _state;
+
+  // 將秒數轉換為分鐘範圍文字
+  String _formatExpectedTime(int? seconds) {
+    if (seconds == null) return '';
+    
+    // 將秒數轉換為分鐘
+    final minutes = (seconds / 60).ceil();
+    
+    // 計算分鐘範圍
+    // 0~5分鐘, 5~10分鐘, 10~15分鐘, ...
+    final lowerBound = minutes <= 0 ? 0 : ((minutes - 1) ~/ 5) * 5;
+    final upperBound = lowerBound + 5;
+    
+    // 根據語言返回不同的格式
+    final isEnglish = Localizations.localeOf(context).languageCode == 'en';
+    if (isEnglish) {
+      return '$lowerBound~$upperBound minutes';
+    } else {
+      return '$lowerBound~$upperBound分鐘';
+    }
+  }
 
   @override
   void initState() {
@@ -327,6 +351,32 @@ class _CallCarPageState extends State<CallCarPage> {
                 ),
               ),
               const SizedBox(height: 6),
+              // 預計到達時間（僅在司機前往中顯示）
+              if (_state == CallCarState.driverOnWay && _userExpectSecond != null)
+                Padding(
+                  padding: const EdgeInsets.only(bottom: 4),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        AppLocalizations.of(context)!.driverExpectedArrival(_formatExpectedTime(_userExpectSecond)),
+                        style: TextStyle(
+                          fontSize: 12,
+                          color: Colors.grey.shade700,
+                        ),
+                      ),
+                      const SizedBox(height: 2),
+                      Text(
+                        AppLocalizations.of(context)!.driverExpectedArrivalNote,
+                        style: TextStyle(
+                          fontSize: 10,
+                          color: Colors.grey.shade600,
+                          fontStyle: FontStyle.italic,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
               // 状态标签
               if (_state == CallCarState.driverOnWay)
                 Row(
@@ -486,6 +536,31 @@ class _CallCarPageState extends State<CallCarPage> {
                   color: Colors.grey.shade600,
                 ),
               ),
+              // 預計到達時間（僅在司機前往中顯示）
+              if (_state == CallCarState.driverOnWay && _userExpectSecond != null) ...[
+                const SizedBox(height: 4),
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      AppLocalizations.of(context)!.driverExpectedArrival(_formatExpectedTime(_userExpectSecond)),
+                      style: TextStyle(
+                        fontSize: 12,
+                        color: Colors.grey.shade700,
+                      ),
+                    ),
+                    const SizedBox(height: 2),
+                    Text(
+                      AppLocalizations.of(context)!.driverExpectedArrivalNote,
+                      style: TextStyle(
+                        fontSize: 10,
+                        color: Colors.grey.shade600,
+                        fontStyle: FontStyle.italic,
+                      ),
+                    ),
+                  ],
+                ),
+              ],
             ],
           ),
         ),
@@ -957,6 +1032,11 @@ class _CallCarPageState extends State<CallCarPage> {
           }
         }
 
+        // 更新司機預計到達時間
+        if (result['user_expect_second'] != null) {
+          _userExpectSecond = result['user_expect_second'] as int;
+        }
+
         // 更新狀態
         _updateStateFromCaseState(_caseState, result);
       });
@@ -1137,15 +1217,30 @@ class _CallCarPageState extends State<CallCarPage> {
     _rideService.stopTracking();
     
     if (mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(AppLocalizations.of(context)!.orderCanceled),
-          backgroundColor: Colors.red,
+      showDialog(
+        context: context,
+        barrierDismissible: false,
+        builder: (context) => AlertDialog(
+          title: Text(AppLocalizations.of(context)!.orderCanceled),
+          content: Text(AppLocalizations.of(context)!.orderCanceledByDriver),
+          actions: [
+            ElevatedButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+                _resetState();
+              },
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.blue,
+                foregroundColor: Colors.white,
+              ),
+              child: Text(AppLocalizations.of(context)!.confirm),
+            ),
+          ],
         ),
       );
+    } else {
+      _resetState();
     }
-    
-    _resetState();
   }
 
   Future<void> _handleCancelCase() async {
@@ -1211,6 +1306,7 @@ class _CallCarPageState extends State<CallCarPage> {
       _driver = null;
       _driverPosition = null;
       _unreadMessagesCount = 0;
+      _userExpectSecond = null;
     });
 
     // 重置地图视角

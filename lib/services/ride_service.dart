@@ -89,6 +89,7 @@ class RideService {
           'case_money': response.data['case_money'],
           'off_time': response.data['off_time'],
           'unread_driver_messages_count': response.data['unread_driver_messages_count'] ?? 0,
+          'user_expect_second': response.data['user_expect_second'],
         };
       }
 

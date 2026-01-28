@@ -102,7 +102,7 @@ abstract class AppLocalizations {
   /// The application name
   ///
   /// In en, this message translates to:
-  /// **'Easy Ride'**
+  /// **'Tap Ride'**
   String get appName;
 
   /// No description provided for @appSlogan.
@@ -222,7 +222,7 @@ abstract class AppLocalizations {
   /// No description provided for @registerSlogan.
   ///
   /// In en, this message translates to:
-  /// **'Join Easy Ride'**
+  /// **'Join Tap Ride'**
   String get registerSlogan;
 
   /// No description provided for @nickname.
@@ -420,7 +420,7 @@ abstract class AppLocalizations {
   /// No description provided for @orderCanceled.
   ///
   /// In en, this message translates to:
-  /// **'Order cancelled (no nearby drivers available)'**
+  /// **'Order cancelled'**
   String get orderCanceled;
 
   /// No description provided for @orderCancelSuccess.
@@ -728,6 +728,24 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Cannot switch tabs while a trip is in progress'**
   String get cannotSwitchWithActiveCase;
+
+  /// No description provided for @driverExpectedArrival.
+  ///
+  /// In en, this message translates to:
+  /// **'Driver expected to arrive in {timeRange}'**
+  String driverExpectedArrival(String timeRange);
+
+  /// No description provided for @driverExpectedArrivalNote.
+  ///
+  /// In en, this message translates to:
+  /// **'(Note: This is the initial time, please pay close attention to the driver\'s location)'**
+  String get driverExpectedArrivalNote;
+
+  /// No description provided for @orderCanceledByDriver.
+  ///
+  /// In en, this message translates to:
+  /// **'Driver waited more than 3 minutes, order has been canceled'**
+  String get orderCanceledByDriver;
 }
 
 class _AppLocalizationsDelegate

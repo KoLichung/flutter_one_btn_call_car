@@ -168,7 +168,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get confirmCancelButton => '確認取消';
 
   @override
-  String get orderCanceled => '訂單已取消(可能暫時附近無司機)';
+  String get orderCanceled => '訂單已取消';
 
   @override
   String get orderCancelSuccess => '訂單已成功取消';
@@ -326,6 +326,17 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get cannotSwitchWithActiveCase => '案件進行中無法切換頁面';
+
+  @override
+  String driverExpectedArrival(String timeRange) {
+    return '司機預計 $timeRange 後到達';
+  }
+
+  @override
+  String get driverExpectedArrivalNote => '（溫馨提醒：這是初始時間，請密切注意司機位置）';
+
+  @override
+  String get orderCanceledByDriver => '司機等待超過 3 分鐘, 已取消訂單';
 }
 
 /// The translations for Chinese, using the Han script (`zh_Hans`).
@@ -492,7 +503,7 @@ class AppLocalizationsZhHans extends AppLocalizationsZh {
   String get confirmCancelButton => '确认取消';
 
   @override
-  String get orderCanceled => '订单已取消(可能暂时附近无司机)';
+  String get orderCanceled => '订单已取消';
 
   @override
   String get orderCancelSuccess => '订单已成功取消';
@@ -650,4 +661,15 @@ class AppLocalizationsZhHans extends AppLocalizationsZh {
 
   @override
   String get cannotSwitchWithActiveCase => '案件进行中无法切换页面';
+
+  @override
+  String driverExpectedArrival(String timeRange) {
+    return '司机预计 $timeRange 后到达';
+  }
+
+  @override
+  String get driverExpectedArrivalNote => '（温馨提醒：这是初始时间，请密切注意司机位置）';
+
+  @override
+  String get orderCanceledByDriver => '司机等待超过 3 分钟, 已取消订单';
 }

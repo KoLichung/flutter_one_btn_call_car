@@ -9,7 +9,7 @@ class AppLocalizationsEn extends AppLocalizations {
   AppLocalizationsEn([String locale = 'en']) : super(locale);
 
   @override
-  String get appName => 'Easy Ride';
+  String get appName => 'Tap Ride';
 
   @override
   String get appSlogan => 'Fast, Convenient, Safe';
@@ -69,7 +69,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get registerTitle => 'Register';
 
   @override
-  String get registerSlogan => 'Join Easy Ride';
+  String get registerSlogan => 'Join Tap Ride';
 
   @override
   String get nickname => 'Nickname';
@@ -169,7 +169,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get confirmCancelButton => 'Confirm Cancel';
 
   @override
-  String get orderCanceled => 'Order cancelled (no nearby drivers available)';
+  String get orderCanceled => 'Order cancelled';
 
   @override
   String get orderCancelSuccess => 'Order cancelled successfully';
@@ -334,4 +334,17 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get cannotSwitchWithActiveCase =>
       'Cannot switch tabs while a trip is in progress';
+
+  @override
+  String driverExpectedArrival(String timeRange) {
+    return 'Driver expected to arrive in $timeRange';
+  }
+
+  @override
+  String get driverExpectedArrivalNote =>
+      '(Note: This is the initial time, please pay close attention to the driver\'s location)';
+
+  @override
+  String get orderCanceledByDriver =>
+      'Driver waited more than 3 minutes, order has been canceled';
 }

@@ -1,6 +1,6 @@
 {
   "@@locale": "en",
-  "appName": "Easy Ride",
+  "appName": "Tap Ride",
   "@appName": {
     "description": "The application name"
   },
@@ -25,7 +25,7 @@
   "appleLoginFailed": "Apple login failed",
   
   "registerTitle": "Register",
-  "registerSlogan": "Join Easy Ride",
+  "registerSlogan": "Join Tap Ride",
   "nickname": "Nickname",
   "nicknameHint": "Enter nickname",
   "nicknameError": "Please enter nickname",
@@ -61,7 +61,7 @@
   "confirmCancelMessage": "Are you sure you want to cancel?",
   "thinkAgain": "Think again",
   "confirmCancelButton": "Confirm Cancel",
-  "orderCanceled": "Order cancelled (no nearby drivers available)",
+  "orderCanceled": "Order cancelled",
   "orderCancelSuccess": "Order cancelled successfully",
   "orderCancelFailed": "Failed to cancel order",
   "confirmBlacklist": "Confirm Blacklist",
@@ -131,5 +131,16 @@
   "loadMessagesFailed": "Failed to load messages",
   "sendFailed": "Failed to send",
   
-  "cannotSwitchWithActiveCase": "Cannot switch tabs while a trip is in progress"
+  "cannotSwitchWithActiveCase": "Cannot switch tabs while a trip is in progress",
+  
+  "driverExpectedArrival": "Driver expected to arrive in {timeRange}",
+  "@driverExpectedArrival": {
+    "placeholders": {
+      "timeRange": {
+        "type": "String"
+      }
+    }
+  },
+  "driverExpectedArrivalNote": "(Note: This is the initial time, please pay close attention to the driver's location)",
+  "orderCanceledByDriver": "Driver waited more than 3 minutes, order has been canceled"
 }

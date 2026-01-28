@@ -58,7 +58,7 @@
   "confirmCancelMessage": "确认要取消叫车吗？",
   "thinkAgain": "我再想想",
   "confirmCancelButton": "确认取消",
-  "orderCanceled": "订单已取消(可能暂时附近无司机)",
+  "orderCanceled": "订单已取消",
   "orderCancelSuccess": "订单已成功取消",
   "orderCancelFailed": "取消订单失败",
   "confirmBlacklist": "确认加入黑名单",
@@ -121,5 +121,16 @@
   "loadMessagesFailed": "加载消息失败",
   "sendFailed": "发送失败",
   
-  "cannotSwitchWithActiveCase": "案件进行中无法切换页面"
+  "cannotSwitchWithActiveCase": "案件进行中无法切换页面",
+  
+  "driverExpectedArrival": "司机预计 {timeRange} 后到达",
+  "@driverExpectedArrival": {
+    "placeholders": {
+      "timeRange": {
+        "type": "String"
+      }
+    }
+  },
+  "driverExpectedArrivalNote": "（温馨提醒：这是初始时间，请密切注意司机位置）",
+  "orderCanceledByDriver": "司机等待超过 3 分钟, 已取消订单"
 }

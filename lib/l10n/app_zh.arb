@@ -58,7 +58,7 @@
   "confirmCancelMessage": "確認要取消叫車嗎？",
   "thinkAgain": "我再想想",
   "confirmCancelButton": "確認取消",
-  "orderCanceled": "訂單已取消(可能暫時附近無司機)",
+  "orderCanceled": "訂單已取消",
   "orderCancelSuccess": "訂單已成功取消",
   "orderCancelFailed": "取消訂單失敗",
   "confirmBlacklist": "確認加入黑名單",
@@ -121,5 +121,16 @@
   "loadMessagesFailed": "加載消息失敗",
   "sendFailed": "發送失敗",
   
-  "cannotSwitchWithActiveCase": "案件進行中無法切換頁面"
+  "cannotSwitchWithActiveCase": "案件進行中無法切換頁面",
+  
+  "driverExpectedArrival": "司機預計 {timeRange} 後到達",
+  "@driverExpectedArrival": {
+    "placeholders": {
+      "timeRange": {
+        "type": "String"
+      }
+    }
+  },
+  "driverExpectedArrivalNote": "（溫馨提醒：這是初始時間，請密切注意司機位置）",
+  "orderCanceledByDriver": "司機等待超過 3 分鐘, 已取消訂單"
 }
