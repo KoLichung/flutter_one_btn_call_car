@@ -9,6 +9,23 @@ plugins {
     id("com.google.gms.google-services")
 }
 
+// Read version from pubspec.yaml (single source of truth)
+val (versionNameFromPubspec, versionCodeFromPubspec) = run {
+    val pubspecFile = rootProject.projectDir.parentFile?.resolve("pubspec.yaml")
+        ?: file("${rootProject.projectDir}/../pubspec.yaml")
+    if (pubspecFile.exists()) {
+        val versionLine = pubspecFile.readText().lines().find { it.trim().startsWith("version:") }
+        val version = versionLine?.substringAfter("version:")?.trim() ?: "1.0.0+1"
+        val parts = version.split("+")
+        Pair(
+            parts[0].trim(),
+            parts.getOrNull(1)?.trim()?.toIntOrNull() ?: 1
+        )
+    } else {
+        Pair("1.0.0", 1)
+    }
+}
+
 // Load Google Maps API Key from properties file
 val googleMapsApiKey: String by lazy {
     val propsFile = rootProject.file("google_maps_api.properties")
@@ -43,8 +60,8 @@ android {
         // For more information, see: https://flutter.dev/to/review-gradle-config.
         minSdk = flutter.minSdkVersion
         targetSdk = flutter.targetSdkVersion
-        versionCode = flutter.versionCode
-        versionName = flutter.versionName
+        versionCode = versionCodeFromPubspec
+        versionName = versionNameFromPubspec
         
         // Inject Google Maps API Key as manifest placeholder
         manifestPlaceholders["GOOGLE_MAPS_API_KEY"] = googleMapsApiKey

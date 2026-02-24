@@ -38,6 +38,7 @@
   
   "gettingLocation": "Getting location...",
   "locationFailed": "Failed to get location",
+  "myLocation": "My Location",
   "oneClickCallCar": "One-Click Call",
   "calling": "Calling...",
   "findingDriver": "Finding driver...",

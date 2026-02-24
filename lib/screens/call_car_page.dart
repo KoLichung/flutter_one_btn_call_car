@@ -1,6 +1,8 @@
 import 'dart:ui' as ui;
 import 'dart:async';
+import 'dart:io' show Platform;
 import 'package:flutter/material.dart';
+import 'package:audioplayers/audioplayers.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:geolocator/geolocator.dart';
 import '../l10n/app_localizations.dart';
@@ -63,6 +65,9 @@ class _CallCarPageState extends State<CallCarPage> {
   BitmapDescriptor? _carIcon;
   bool _isLoading = false;
 
+  // Android 音效播放（找到司機/司機抵達）
+  AudioPlayer? _notificationSoundPlayer;
+
   // 暴露当前状态给外部访问
   CallCarState get currentState => _state;
 
@@ -98,7 +103,19 @@ class _CallCarPageState extends State<CallCarPage> {
   void dispose() {
     _rideService.stopTracking();
     _rideService.dispose();
+    _notificationSoundPlayer?.dispose();
     super.dispose();
+  }
+
+  /// 僅在 Android 上播放通知音效（找到司機 / 司機抵達）
+  void _playNotificationSoundOnAndroid(String assetName) {
+    if (!Platform.isAndroid) return;
+    try {
+      _notificationSoundPlayer ??= AudioPlayer();
+      _notificationSoundPlayer!.play(AssetSource(assetName));
+    } catch (e) {
+      print('🔴 [CallCarPage] 播放通知音效失敗: $e');
+    }
   }
 
   Future<void> _getCurrentLocation() async {
@@ -1044,6 +1061,7 @@ class _CallCarPageState extends State<CallCarPage> {
   }
 
   void _updateStateFromCaseState(String caseState, Map<String, dynamic> result) {
+    final previousState = _state;
     switch (caseState) {
       case 'wait':
       case 'dispatching':
@@ -1051,9 +1069,17 @@ class _CallCarPageState extends State<CallCarPage> {
         break;
       case 'way_to_catch':
         _state = CallCarState.driverOnWay;
+        // Android: 找到司機時播放 got_a_driver
+        if (previousState != CallCarState.driverOnWay) {
+          _playNotificationSoundOnAndroid('got_a_driver.mp3');
+        }
         break;
       case 'arrived':
         _state = CallCarState.arrived;
+        // Android: 司機抵達時播放 ding_dong
+        if (previousState != CallCarState.arrived) {
+          _playNotificationSoundOnAndroid('ding_dong.mp3');
+        }
         break;
       case 'catched':
       case 'on_road':

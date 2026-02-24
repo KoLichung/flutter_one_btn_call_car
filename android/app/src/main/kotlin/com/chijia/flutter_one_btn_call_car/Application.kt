@@ -15,27 +15,39 @@ class Application : FlutterApplication() {
 
     private fun createNotificationChannel() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            val channelId = "default_notification_channel"
-            val channelName = "一鍵叫車通知"
-            val importance = NotificationManager.IMPORTANCE_HIGH
-            val channel = NotificationChannel(channelId, channelName, importance).apply {
+            val notificationManager = getSystemService(NotificationManager::class.java)
+            val audioAttributes = AudioAttributes.Builder()
+                .setContentType(AudioAttributes.CONTENT_TYPE_SONIFICATION)
+                .setUsage(AudioAttributes.USAGE_NOTIFICATION)
+                .build()
+
+            // 預設 channel：ding_dong（其他通知用）
+            val defaultChannel = NotificationChannel(
+                "default_notification_channel",
+                "一鍵叫車通知",
+                NotificationManager.IMPORTANCE_HIGH
+            ).apply {
                 description = "接收叫車相關通知"
-                
-                // 設置自訂音效
-                val soundUri = Uri.parse("android.resource://${packageName}/raw/ding_dong")
-                val audioAttributes = AudioAttributes.Builder()
-                    .setContentType(AudioAttributes.CONTENT_TYPE_SONIFICATION)
-                    .setUsage(AudioAttributes.USAGE_NOTIFICATION)
-                    .build()
-                setSound(soundUri, audioAttributes)
-                
+                setSound(Uri.parse("android.resource://${packageName}/raw/ding_dong"), audioAttributes)
                 enableVibration(true)
                 vibrationPattern = longArrayOf(0, 500, 200, 500)
                 enableLights(true)
             }
+            notificationManager.createNotificationChannel(defaultChannel)
 
-            val notificationManager = getSystemService(NotificationManager::class.java)
-            notificationManager.createNotificationChannel(channel)
+            // got_a_driver channel：司機已接單、司機抵達（需後端指定 channel_id）
+            val gotADriverChannel = NotificationChannel(
+                "got_a_driver_channel",
+                "司機接單/抵達通知",
+                NotificationManager.IMPORTANCE_HIGH
+            ).apply {
+                description = "司機已接單或司機抵達時的通知"
+                setSound(Uri.parse("android.resource://${packageName}/raw/got_a_driver"), audioAttributes)
+                enableVibration(true)
+                vibrationPattern = longArrayOf(0, 500, 200, 500)
+                enableLights(true)
+            }
+            notificationManager.createNotificationChannel(gotADriverChannel)
         }
     }
 }

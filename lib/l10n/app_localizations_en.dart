@@ -102,6 +102,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get locationFailed => 'Failed to get location';
 
   @override
+  String get myLocation => 'My Location';
+
+  @override
   String get oneClickCallCar => 'One-Click Call';
 
   @override

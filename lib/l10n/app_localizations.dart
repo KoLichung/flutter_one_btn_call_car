@@ -285,6 +285,12 @@ abstract class AppLocalizations {
   /// **'Failed to get location'**
   String get locationFailed;
 
+  /// No description provided for @myLocation.
+  ///
+  /// In en, this message translates to:
+  /// **'My Location'**
+  String get myLocation;
+
   /// No description provided for @oneClickCallCar.
   ///
   /// In en, this message translates to:

@@ -35,6 +35,7 @@
   
   "gettingLocation": "获取位置中...",
   "locationFailed": "获取位置失败",
+  "myLocation": "我的位置",
   "oneClickCallCar": "一键叫车",
   "calling": "正在叫车...",
   "findingDriver": "正在寻找司机...",

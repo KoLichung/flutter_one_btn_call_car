@@ -102,6 +102,9 @@ class AppLocalizationsZh extends AppLocalizations {
   String get locationFailed => '獲取位置失敗';
 
   @override
+  String get myLocation => '我的位置';
+
+  @override
   String get oneClickCallCar => '一鍵叫車';
 
   @override
@@ -435,6 +438,9 @@ class AppLocalizationsZhHans extends AppLocalizationsZh {
 
   @override
   String get locationFailed => '获取位置失败';
+
+  @override
+  String get myLocation => '我的位置';
 
   @override
   String get oneClickCallCar => '一键叫车';
